@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Order (26.06.2016 - 11:15)"
+        android:id="@+id/dateTime"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginBottom="13dp"
+        android:textColor="#000000"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cost: R81.00"
+        android:id="@+id/cost"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="13dp"
+        android:textColor="#000000"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="4 x "
+        android:id="@+id/quantB"
+        android:layout_below="@+id/dateTime"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="40dp"
+        android:layout_marginTop="20px"
+        android:textColor="#000000" />
+
+    <ImageView
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:id="@+id/imageView2"
+        android:src="@drawable/beer_order_small"
+        android:layout_below="@+id/dateTime"
+        android:layout_toEndOf="@+id/quantB"
+        android:layout_marginBottom="5dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Status: Order in Queue"
+        android:id="@+id/status"
+        android:layout_below="@+id/dateTime"
+        android:layout_toEndOf="@+id/imageView2"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="20px"
+        android:layout_marginLeft="35dp"
+        android:textColor="#0080ff" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="( 02:59 )"
+        android:id="@+id/countdown"
+        android:layout_below="@+id/dateTime"
+        android:layout_toEndOf="@+id/status"
+        android:layout_marginTop="20px"
+        android:textColor="#0080ff" />
+</RelativeLayout>

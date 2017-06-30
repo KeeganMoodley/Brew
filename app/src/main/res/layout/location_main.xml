@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.example.s213463695.brew.LocationMain"
+    android:id="@+id/container">
+
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.example.s213463695.brew.LocationMain"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true">
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/qr_fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/qrcode"
+                app:layout_anchor="@id/app_bar"
+                app:layout_anchorGravity="bottom|end"
+                android:layout_marginLeft="@dimen/fab_margin"
+                android:layout_marginRight="@dimen/fab_margin"
+                android:layout_below="@+id/textView8"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="15dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nelson Mandela Bay Stadium"
+                android:id="@+id/textView8"
+                android:textSize="26dp"
+                android:paddingLeft="30dp"
+                android:paddingRight="30dp"
+                android:paddingTop="16dp"
+                android:gravity="center"
+                android:textColor="@color/colorAccent"
+                android:textStyle="bold"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Select a Block"
+                android:id="@+id/textView9"
+                android:textStyle="bold"
+                android:textSize="20dp"
+                android:textColor="#000000"
+                android:padding="16dp"
+                android:layout_alignTop="@+id/qr_fab"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="15dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Block"
+                android:id="@+id/textView15"
+                android:layout_marginLeft="20dp"
+                android:textSize="15dp"
+                android:textColor="@color/colorAccent"
+                android:gravity="center_vertical"
+                android:layout_alignTop="@+id/blockSpin"
+                android:layout_above="@+id/textView12"
+                android:layout_alignEnd="@+id/textView9"
+                android:layout_marginRight="8dp"
+                android:layout_centerHorizontal="true"
+                android:textAlignment="center" />
+
+            <Spinner
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/blockSpin"
+                android:gravity="center"
+                android:spinnerMode="dropdown"
+                android:layout_below="@+id/textView9"
+                android:layout_toEndOf="@+id/textView15"
+                android:layout_marginRight="20dp"
+                android:layout_centerHorizontal="true"
+                android:foregroundGravity="center" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Select a Seat"
+                android:id="@+id/textView12"
+                android:textStyle="bold"
+                android:textSize="20dp"
+                android:textColor="#000000"
+                android:padding="16dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_below="@+id/blockSpin"
+                android:layout_alignParentLeft="true" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_alignParentEnd="true"
+                android:id="@+id/horizontalSeat"
+                android:layout_below="@+id/textView12"
+                android:layout_alignParentLeft="true">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Row"
+                    android:id="@+id/textView13"
+                    android:layout_marginLeft="32dp"
+                    android:textSize="15dp"
+                    android:textColor="@color/colorAccent"
+                    android:gravity="center_vertical" />
+
+                <Spinner
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/rowSpin"
+                    android:layout_below="@+id/textView12"
+                    android:layout_alignParentLeft="true"
+                    android:gravity="left|center"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="8dp"
+                    android:spinnerMode="dropdown"
+                    android:foregroundGravity="center"
+                    android:textAlignment="center" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Seat"
+                    android:id="@+id/textView14"
+                    android:layout_marginLeft="20dp"
+                    android:textSize="15dp"
+                    android:textColor="@color/colorAccent"
+                    android:gravity="center_vertical" />
+
+                <Spinner
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/seatSpin"
+                    android:layout_below="@+id/textView12"
+                    android:gravity="center|right"
+                    android:layout_alignBottom="@+id/rowSpin"
+                    android:layout_weight="1"
+                    android:layout_marginRight="32dp"
+                    android:layout_marginLeft="8dp"
+                    android:spinnerMode="dropdown"
+                    android:foregroundGravity="center"
+                    android:textAlignment="center" />
+            </LinearLayout>
+
+        </RelativeLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/linearLayout"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true">
+
+        <android.support.v7.widget.AppCompatButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:id="@+id/cancel_location_main"
+            android:background="@color/colorAccent"
+            android:textColor="#ffffff"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1" />
+
+        <android.support.v7.widget.AppCompatButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Confirm"
+            android:id="@+id/confirm_location_main"
+            android:background="@color/colorAccent"
+            android:textColor="#ffffff"
+            android:layout_marginLeft="10dp"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+</RelativeLayout>

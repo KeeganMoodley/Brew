@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/home"
+            android:icon="@drawable/home"
+            android:title="Home" />
+        <item
+            android:id="@+id/place"
+            android:icon="@drawable/ic_menu_send"
+            android:title="Place Order" />
+        <item
+            android:id="@+id/view"
+            android:icon="@drawable/notification"
+            android:title="Notifications" />
+        <item
+            android:id="@+id/location"
+            android:icon="@drawable/location"
+            android:title="Change Location" />
+        <!--<item-->
+            <!--android:id="@+id/tester"-->
+            <!--android:icon="@drawable/test"-->
+            <!--android:title="Run Test" />-->
+    </group>
+
+    <item android:title="Authentication">
+        <menu>
+            <item
+                android:id="@+id/password"
+                android:icon="@drawable/password"
+                android:title="Change Password" />
+            <item
+                android:id="@+id/logout"
+                android:icon="@drawable/logout"
+                android:title="Logout" />
+        </menu>
+    </item>
+
+</menu>
