@@ -22,6 +22,8 @@ public class FoodOrder extends Fragment implements TotalListener {
     ArrayList<Food> foods;
     private FoodOrderListener mListener;
     View view;
+    double total;
+    TextView txtTotal;
 
     public FoodOrder() {
 
@@ -58,16 +60,27 @@ public class FoodOrder extends Fragment implements TotalListener {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this.getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
         FoodAdapter foodAdapter = new FoodAdapter(foods);
+        foodAdapter.setTotalListener(FoodOrder.this);
         recyclerView.setAdapter(foodAdapter);
 
-        recyclerView.setOnClickListener(new View.OnClickListener() {
+        getTotal();
+
+        /*recyclerView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 calcTotal();
             }
-        });
+        });*/
 
         return view;
+    }
+
+    private void getTotal() {
+        txtTotal = (TextView) view.findViewById(R.id.total);
+        total = 0;
+        for (Food food : foods)
+            total += food.getTotal();
+        txtTotal.setText("R" + String.valueOf(total));
     }
 
     @Override
@@ -82,11 +95,7 @@ public class FoodOrder extends Fragment implements TotalListener {
 
     @Override
     public void calcTotal() {
-        TextView txtTotal = (TextView) view.findViewById(R.id.total);
-        double tot = 0;
-        for (Food food : foods)
-            tot += food.getTotal();
-        txtTotal.setText("R" + tot);
+        getTotal();
     }
 
     public interface FoodOrderListener {

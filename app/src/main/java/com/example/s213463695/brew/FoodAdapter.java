@@ -82,7 +82,8 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
             public void onClick(View v) {
                 food.decQuantity();
                 holder.quantity.setText(String.valueOf(food.getQuantity()));
-                //totalListener.calcTotal();
+                totalListener.calcTotal();
+                notifyDataSetChanged();
             }
         });
         holder.btnInc.setOnClickListener(new View.OnClickListener() {
@@ -90,7 +91,8 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
             public void onClick(View v) {
                 food.incQuantity();
                 holder.quantity.setText(String.valueOf(food.getQuantity()));
-                //totalListener.calcTotal();
+                totalListener.calcTotal();
+                notifyDataSetChanged();
             }
         });
 
@@ -99,5 +101,9 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
     @Override
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
+    }
+
+    public void setTotalListener(TotalListener totalListener) {
+        this.totalListener = totalListener;
     }
 }

@@ -23,7 +23,8 @@ public class Food {
     }
 
     public void decQuantity() {
-        quantity--;
+        if (quantity > 0)
+            quantity--;
     }
 
     public int getImage() {
