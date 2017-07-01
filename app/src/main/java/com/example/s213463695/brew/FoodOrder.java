@@ -37,12 +37,14 @@ public class FoodOrder extends Fragment implements TotalListener {
     }
 
     private void populateList() {
-        foods.add(new Food(R.drawable.brew_logo, 30, "Burger", true));
+        /*foods.add(new Food(R.drawable.brew_logo, 30, "Burger", true));
         foods.add(new Food(R.drawable.brew_logo, 40, "Hot dog", true));
         foods.add(new Food(R.drawable.brew_logo, 20, "Russian Roll", false));
         foods.add(new Food(R.drawable.brew_logo, 10, "Hot Chips", true));
         foods.add(new Food(R.drawable.brew_logo, 100, "Wors", true));
-        foods.add(new Food(R.drawable.brew_logo, 250, "Salad", true));
+        foods.add(new Food(R.drawable.brew_logo, 250, "Salad", true));*/
+
+        foods.add(new Liquid(R.drawable.brew_logo, 30, "Coke", "nutrituion", "dietary", false, 100, 500));
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -80,7 +82,7 @@ public class FoodOrder extends Fragment implements TotalListener {
         total = 0;
         for (Food food : foods)
             total += food.getTotal();
-        txtTotal.setText("R" + String.valueOf(total));
+        txtTotal.setText("R" + String.format("%.2f", total));
     }
 
     @Override

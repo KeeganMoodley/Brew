@@ -4,18 +4,21 @@ package com.example.s213463695.brew;
  * Created by s214079694 on 2017/06/29.
  */
 
-public class Food {
-    int image, quantity;
+public abstract class Food {
+    int image, quantity, quantityAvailable;
     double price;
-    String title;
+    String title, nutrition, dietary;
     boolean halaal;
 
-    public Food(int image, double price, String title, boolean halaal) {
+    public Food(int image, double price, String title, String nutrition, String dietary, boolean halaal, int quantityAvailable) {
         this.image = image;
         this.price = price;
         this.title = title;
         this.halaal = halaal;
         quantity = 0;
+        this.quantityAvailable = quantityAvailable;
+        this.nutrition = nutrition;
+        this.dietary = dietary;
     }
 
     public void incQuantity() {

@@ -41,7 +41,7 @@
                     android:ems="10"
                     android:inputType="textPersonName"
                     android:text="Burger"
-                    android:textSize="24sp" />
+                    android:textSize="30sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -66,7 +66,6 @@
                         android:layout_weight="1"
                         android:ems="10"
                         android:inputType="textPersonName"
-                        android:text="Halaal"
                         android:textSize="24sp" />
                 </LinearLayout>
 
@@ -87,6 +86,7 @@
                         android:id="@+id/btnDec"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="right|center"
                         android:layout_weight="1"
                         android:text="-" />
 
@@ -94,8 +94,10 @@
                         android:id="@+id/quantity"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|center_horizontal"
                         android:layout_weight="1"
                         android:ems="10"
+                        android:gravity="center"
                         android:inputType="textPersonName"
                         android:text="0"
                         android:textSize="24sp" />
@@ -104,6 +106,7 @@
                         android:id="@+id/btnInc"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="left|center"
                         android:layout_weight="1"
                         android:text="+" />
                 </LinearLayout>
