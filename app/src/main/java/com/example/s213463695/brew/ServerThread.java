@@ -7,6 +7,7 @@ import android.widget.Toast;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -122,6 +123,18 @@ public class ServerThread extends Thread {
                         String androidIndex = in.readUTF();
 
                         main.triggerNotifications(time, date, quantity, price, androidIndex);
+                    }
+                    //Get food from sever
+                    else if (command.equals("#GET_STOCK")) {
+
+                        ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+                        try {
+                            Food food = (Food) objectInputStream.readObject();
+                            FoodOrder.populateList(food);
+                        } catch (ClassNotFoundException e) {
+                            e.printStackTrace();
+                        }
+
                     } else if (command.equals("#DISPATCH_DOWN")) {
                         main.runOnUiThread(new Runnable() {
                             @Override
@@ -299,6 +312,18 @@ public class ServerThread extends Thread {
             } catch (IOException e) {
                 // input stream no longer working, e.g. connection lost
                 Log.e("THREAD", "ERROR: " + e.getMessage());
+            }
+        }
+    }
+
+    //Request to server to get food
+    public void requestFood() {
+        if (isConnected()) {
+            try {
+                out.writeUTF("#GET_STOCK");
+                out.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }

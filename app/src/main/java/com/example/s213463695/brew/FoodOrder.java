@@ -19,11 +19,12 @@ import java.util.ArrayList;
  */
 
 public class FoodOrder extends Fragment implements TotalListener {
-    ArrayList<Food> foods;
+    static ArrayList<Food> foods;
     private FoodOrderListener mListener;
     View view;
     double total;
     TextView txtTotal;
+    //private static ServerThread server = null;
 
     public FoodOrder() {
 
@@ -33,10 +34,11 @@ public class FoodOrder extends Fragment implements TotalListener {
         FoodOrder fragment = new FoodOrder();
         Bundle args = new Bundle();
         fragment.setArguments(args);
+        Login.serverLink.requestFood();
         return fragment;
     }
 
-    private void populateList() {
+    protected static void populateList(Food food) {
         /*foods.add(new Food(R.drawable.brew_logo, 30, "Burger", true));
         foods.add(new Food(R.drawable.brew_logo, 40, "Hot dog", true));
         foods.add(new Food(R.drawable.brew_logo, 20, "Russian Roll", false));
@@ -45,6 +47,7 @@ public class FoodOrder extends Fragment implements TotalListener {
         foods.add(new Food(R.drawable.brew_logo, 250, "Salad", true));*/
 
         foods.add(new Liquid(R.drawable.brew_logo, 30, "Coke", "nutrituion", "dietary", false, 100, 500));
+        foods.add(food);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -52,7 +55,7 @@ public class FoodOrder extends Fragment implements TotalListener {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         foods = new ArrayList<>();
-        populateList();
+        //populateList();
         view = inflater.inflate(R.layout.fragment_order_food, container, false);
 
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rView);
