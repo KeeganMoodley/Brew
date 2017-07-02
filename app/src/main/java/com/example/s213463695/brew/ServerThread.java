@@ -403,6 +403,7 @@ public class ServerThread extends Thread {
         } catch (Exception e) {
             // something went wrong with the connect
             Log.e("THREAD", "ERROR: " + e.getMessage());
+            Log.e("Server", "Not connecting");
         }
         return connected;
     }

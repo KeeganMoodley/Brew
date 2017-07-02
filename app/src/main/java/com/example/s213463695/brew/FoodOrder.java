@@ -85,7 +85,7 @@ public class FoodOrder extends Fragment implements TotalListener {
         total = 0;
         for (Food food : foods)
             total += food.getTotal();
-        txtTotal.setText("R" + String.format("%.2f", total));
+        txtTotal.setText("Total: R" + String.format("%.2f", total));
     }
 
     @Override
