@@ -49,20 +49,21 @@ public class Profile extends Fragment {
 
     private ProfileListener mListener;
     public static ImageView profile_picture;
-    public static Bitmap uploadImage=null;
+    public static Bitmap uploadImage = null;
     private Bitmap edit;
     private Bitmap tick;
     private AppCompatButton save;
-    private boolean edit1_open=false;
-    private boolean edit2_open=false;
-    private boolean edit3_open=false;
-    private boolean edit4_open=false;
+    private boolean edit1_open = false;
+    private boolean edit2_open = false;
+    private boolean edit3_open = false;
+    private boolean edit4_open = false;
     private TextView user_name;
     private TextView user_email;
     private TextView user_cell;
     private TextView user_phone;
 
-    public Profile() {}
+    public Profile() {
+    }
 
     public String getUser_name() {
         return user_name.getText().toString();
@@ -94,23 +95,23 @@ public class Profile extends Fragment {
 
         mListener.LoadAdditionalInfo();
 
-        edit=BitmapFactory.decodeResource(getResources(),R.mipmap.ic_mode_edit_black_24dp);
-        tick=BitmapFactory.decodeResource(getResources(),R.mipmap.ic_check_black_24dp);
+        edit = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_mode_edit_black_24dp);
+        tick = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_check_black_24dp);
 
-        RelativeLayout body1=(RelativeLayout)v.findViewById(R.id.body1);
-        RelativeLayout body2=(RelativeLayout)v.findViewById(R.id.body2);
-        RelativeLayout body3=(RelativeLayout)v.findViewById(R.id.body3);
-        RelativeLayout body4=(RelativeLayout)v.findViewById(R.id.body4);
+        RelativeLayout body1 = (RelativeLayout) v.findViewById(R.id.body1);
+        RelativeLayout body2 = (RelativeLayout) v.findViewById(R.id.body2);
+        RelativeLayout body3 = (RelativeLayout) v.findViewById(R.id.body3);
+        RelativeLayout body4 = (RelativeLayout) v.findViewById(R.id.body4);
 
-        final ImageView edit1=(ImageView)v.findViewById(R.id.edit1);
-        final ImageView edit2=(ImageView)v.findViewById(R.id.edit2);
-        final ImageView edit3=(ImageView)v.findViewById(R.id.edit3);
-        final ImageView edit4=(ImageView)v.findViewById(R.id.edit4);
+        final ImageView edit1 = (ImageView) v.findViewById(R.id.edit1);
+        final ImageView edit2 = (ImageView) v.findViewById(R.id.edit2);
+        final ImageView edit3 = (ImageView) v.findViewById(R.id.edit3);
+        final ImageView edit4 = (ImageView) v.findViewById(R.id.edit4);
 
-        user_cell=(TextView)v.findViewById(R.id.cell_profile);
-        user_phone=(TextView)v.findViewById(R.id.phone_profile);
-        user_name=(TextView)v.findViewById(R.id.username_profile);
-        user_email=(TextView)v.findViewById(R.id.email_profile);
+        user_cell = (TextView) v.findViewById(R.id.cell_profile);
+        user_phone = (TextView) v.findViewById(R.id.phone_profile);
+        user_name = (TextView) v.findViewById(R.id.username_profile);
+        user_email = (TextView) v.findViewById(R.id.email_profile);
 
         user_cell.setText(cell);
         user_phone.setText(phone);
@@ -122,10 +123,10 @@ public class Profile extends Fragment {
         final ViewSwitcher switcherC = (ViewSwitcher) v.findViewById(R.id.cell_switcher);
         final ViewSwitcher switcherP = (ViewSwitcher) v.findViewById(R.id.phone_switcher);
 
-        final EditText editPhone=(EditText)v.findViewById(R.id.profile_phone_edit);
-        final EditText editCell=(EditText)v.findViewById(R.id.profile_cell_edit);
-        final EditText editEmail=(EditText)v.findViewById(R.id.profile_email_edit);
-        final EditText editUsername=(EditText)v.findViewById(R.id.profile_username_edit);
+        final EditText editPhone = (EditText) v.findViewById(R.id.profile_phone_edit);
+        final EditText editCell = (EditText) v.findViewById(R.id.profile_cell_edit);
+        final EditText editEmail = (EditText) v.findViewById(R.id.profile_email_edit);
+        final EditText editUsername = (EditText) v.findViewById(R.id.profile_username_edit);
 
         FloatingActionButton fab = (FloatingActionButton) v.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -135,25 +136,25 @@ public class Profile extends Fragment {
             }
         });
 
-        save=(AppCompatButton)v.findViewById(R.id.save);
+        save = (AppCompatButton) v.findViewById(R.id.save);
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                closeOpenInstances(switcherC,switcherE,switcherP,switcherU,edit1,edit2,edit3,edit4, null,editUsername,editEmail,editCell,editPhone);
+                closeOpenInstances(switcherC, switcherE, switcherP, switcherU, edit1, edit2, edit3, edit4, null, editUsername, editEmail, editCell, editPhone);
                 Snackbar.make(v, "Confirm by clicking on the right -->", Snackbar.LENGTH_LONG)
                         .setAction("Save", new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                notifyChanges(user_name.getText().toString(),user_email.getText().toString(),user_cell.getText().toString(),user_phone.getText().toString());
+                                notifyChanges(user_name.getText().toString(), user_email.getText().toString(), user_cell.getText().toString(), user_phone.getText().toString());
                             }
                         }).show();
             }
         });
 
-        AppBarLayout header=(AppBarLayout)v.findViewById(R.id.app_bar);
+        AppBarLayout header = (AppBarLayout) v.findViewById(R.id.app_bar);
         profile_picture = (ImageView) v.findViewById(R.id.profile_picture);
         profile_picture.setImageBitmap(profileExpanded);
-        header.setOnClickListener(new View.OnClickListener(){
+        header.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startPictureIntent(switcherC, switcherE, switcherP, switcherU, edit1, edit2, edit3, edit4, null, editUsername, editEmail, editCell, editPhone);
@@ -163,25 +164,25 @@ public class Profile extends Fragment {
         body1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                closeOpenInstances(switcherC,switcherE,switcherP,switcherU,edit1,edit2,edit3,edit4,null,editUsername,editEmail,editCell,editPhone);
+                closeOpenInstances(switcherC, switcherE, switcherP, switcherU, edit1, edit2, edit3, edit4, null, editUsername, editEmail, editCell, editPhone);
             }
         });
         body2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                closeOpenInstances(switcherC,switcherE,switcherP,switcherU,edit1,edit2,edit3,edit4,null,editUsername,editEmail,editCell,editPhone);
+                closeOpenInstances(switcherC, switcherE, switcherP, switcherU, edit1, edit2, edit3, edit4, null, editUsername, editEmail, editCell, editPhone);
             }
         });
         body3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                closeOpenInstances(switcherC,switcherE,switcherP,switcherU,edit1,edit2,edit3,edit4,null,editUsername,editEmail,editCell,editPhone);
+                closeOpenInstances(switcherC, switcherE, switcherP, switcherU, edit1, edit2, edit3, edit4, null, editUsername, editEmail, editCell, editPhone);
             }
         });
         body4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                closeOpenInstances(switcherC,switcherE,switcherP,switcherU,edit1,edit2,edit3,edit4,null,editUsername,editEmail,editCell,editPhone);
+                closeOpenInstances(switcherC, switcherE, switcherP, switcherU, edit1, edit2, edit3, edit4, null, editUsername, editEmail, editCell, editPhone);
             }
         });
 
@@ -193,10 +194,9 @@ public class Profile extends Fragment {
                     InputMethodManager in = (InputMethodManager) main.getSystemService(Context.INPUT_METHOD_SERVICE);
                     in.hideSoftInputFromWindow(editUsername.getWindowToken(), 0);
 
-                    closeOpenInstances(switcherC,switcherE,switcherP,switcherU,edit1,edit2,edit3,edit4,null,editUsername,editEmail,editCell,editPhone);
+                    closeOpenInstances(switcherC, switcherE, switcherP, switcherU, edit1, edit2, edit3, edit4, null, editUsername, editEmail, editCell, editPhone);
                     return true;
-                }
-                else
+                } else
                     return false;
             }
         });
@@ -209,10 +209,9 @@ public class Profile extends Fragment {
                     InputMethodManager in = (InputMethodManager) main.getSystemService(Context.INPUT_METHOD_SERVICE);
                     in.hideSoftInputFromWindow(editEmail.getWindowToken(), 0);
 
-                    closeOpenInstances(switcherC,switcherE,switcherP,switcherU,edit1,edit2,edit3,edit4,null,editUsername,editEmail,editCell,editPhone);
+                    closeOpenInstances(switcherC, switcherE, switcherP, switcherU, edit1, edit2, edit3, edit4, null, editUsername, editEmail, editCell, editPhone);
                     return true;
-                }
-                else
+                } else
                     return false;
             }
         });
@@ -225,10 +224,9 @@ public class Profile extends Fragment {
                     InputMethodManager in = (InputMethodManager) main.getSystemService(Context.INPUT_METHOD_SERVICE);
                     in.hideSoftInputFromWindow(editCell.getWindowToken(), 0);
 
-                    closeOpenInstances(switcherC,switcherE,switcherP,switcherU,edit1,edit2,edit3,edit4,null,editUsername,editEmail,editCell,editPhone);
+                    closeOpenInstances(switcherC, switcherE, switcherP, switcherU, edit1, edit2, edit3, edit4, null, editUsername, editEmail, editCell, editPhone);
                     return true;
-                }
-                else
+                } else
                     return false;
             }
         });
@@ -241,10 +239,9 @@ public class Profile extends Fragment {
                     InputMethodManager in = (InputMethodManager) main.getSystemService(Context.INPUT_METHOD_SERVICE);
                     in.hideSoftInputFromWindow(editPhone.getWindowToken(), 0);
 
-                    closeOpenInstances(switcherC,switcherE,switcherP,switcherU,edit1,edit2,edit3,edit4, null,editUsername,editEmail,editCell,editPhone);
+                    closeOpenInstances(switcherC, switcherE, switcherP, switcherU, edit1, edit2, edit3, edit4, null, editUsername, editEmail, editCell, editPhone);
                     return true;
-                }
-                else
+                } else
                     return false;
             }
         });
@@ -252,52 +249,52 @@ public class Profile extends Fragment {
         edit1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(edit1_open) {
+                if (edit1_open) {
                     edit1.setImageBitmap(edit);
                     switcherU.showNext();
                     user_name.setText(editUsername.getText());
-                    edit1_open=!edit1_open;
-                }else{
+                    edit1_open = !edit1_open;
+                } else {
                     edit1.setImageBitmap(tick);
                     switcherU.showNext();
                     editUsername.setText(user_name.getText());
-                    edit1_open=!edit1_open;
+                    edit1_open = !edit1_open;
                 }
-                closeOpenInstances(switcherC,switcherE,switcherP,switcherU,edit1,edit2,edit3,edit4,edit1,editUsername,editEmail,editCell,editPhone);
+                closeOpenInstances(switcherC, switcherE, switcherP, switcherU, edit1, edit2, edit3, edit4, edit1, editUsername, editEmail, editCell, editPhone);
             }
         });
         edit2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(edit2_open) {
+                if (edit2_open) {
                     edit2.setImageBitmap(edit);
                     switcherE.showNext();
                     user_email.setText(editEmail.getText());
-                    edit2_open=!edit2_open;
-                }else{
+                    edit2_open = !edit2_open;
+                } else {
                     edit2.setImageBitmap(tick);
                     switcherE.showNext();
                     editEmail.setText(user_email.getText());
-                    edit2_open=!edit2_open;
+                    edit2_open = !edit2_open;
                 }
-                closeOpenInstances(switcherC,switcherE,switcherP,switcherU,edit1,edit2,edit3,edit4,edit2,editUsername,editEmail,editCell,editPhone);
+                closeOpenInstances(switcherC, switcherE, switcherP, switcherU, edit1, edit2, edit3, edit4, edit2, editUsername, editEmail, editCell, editPhone);
             }
         });
         edit3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(edit3_open) {
+                if (edit3_open) {
                     edit3.setImageBitmap(edit);
                     switcherC.showNext();
                     user_cell.setText(editCell.getText());
-                    edit3_open=!edit3_open;
-                }else{
+                    edit3_open = !edit3_open;
+                } else {
                     edit3.setImageBitmap(tick);
                     switcherC.showNext();
                     editCell.setText(user_cell.getText());
-                    edit3_open=!edit3_open;
+                    edit3_open = !edit3_open;
                 }
-                closeOpenInstances(switcherC,switcherE,switcherP,switcherU,edit1,edit2,edit3,edit4,edit3,editUsername,editEmail,editCell,editPhone);
+                closeOpenInstances(switcherC, switcherE, switcherP, switcherU, edit1, edit2, edit3, edit4, edit3, editUsername, editEmail, editCell, editPhone);
             }
         });
         edit4.setOnClickListener(new View.OnClickListener() {
@@ -308,14 +305,13 @@ public class Profile extends Fragment {
                     switcherP.showNext();
                     user_phone.setText(editPhone.getText());
                     edit4_open = !edit4_open;
-                }
-                else{
+                } else {
                     edit4.setImageBitmap(tick);
                     switcherP.showNext();
                     editPhone.setText(user_phone.getText());
                     edit4_open = !edit4_open;
                 }
-                closeOpenInstances(switcherC,switcherE,switcherP,switcherU,edit1,edit2,edit3,edit4,edit4,editUsername,editEmail,editCell,editPhone);
+                closeOpenInstances(switcherC, switcherE, switcherP, switcherU, edit1, edit2, edit3, edit4, edit4, editUsername, editEmail, editCell, editPhone);
             }
         });
 
@@ -328,31 +324,32 @@ public class Profile extends Fragment {
             closeOpenInstances(switcherC, switcherE, switcherP, switcherU, edit1, edit2, edit3, edit4, null, editUsername, editEmail, editCell, editPhone);
             Intent in = getPickImageIntent(main);
             startActivityForResult(in, 0);
-        }catch (Exception e){}
+        } catch (Exception e) {
+        }
     }
 
     private void closeOpenInstances(ViewSwitcher switcherC, ViewSwitcher switcherE, ViewSwitcher switcherP, ViewSwitcher switcherU,
-                                    ImageView edit1,ImageView edit2, ImageView edit3, ImageView edit4, ImageView exception,
+                                    ImageView edit1, ImageView edit2, ImageView edit3, ImageView edit4, ImageView exception,
                                     EditText name, EditText email, EditText cell, EditText phone) {
-        if(edit1_open&&edit1!=exception) {
+        if (edit1_open && edit1 != exception) {
             edit1.setImageBitmap(edit);
             switcherU.showNext();
             user_name.setText(name.getText());
-            edit1_open=!edit1_open;
+            edit1_open = !edit1_open;
         }
-        if(edit2_open&&edit2!=exception) {
+        if (edit2_open && edit2 != exception) {
             edit2.setImageBitmap(edit);
             switcherE.showNext();
             user_email.setText(email.getText());
-            edit2_open=!edit2_open;
+            edit2_open = !edit2_open;
         }
-        if(edit3_open&&edit3!=exception) {
+        if (edit3_open && edit3 != exception) {
             edit3.setImageBitmap(edit);
             switcherC.showNext();
             user_cell.setText(cell.getText());
-            edit3_open=!edit3_open;
+            edit3_open = !edit3_open;
         }
-        if (edit4_open&&edit4!=exception) {
+        if (edit4_open && edit4 != exception) {
             edit4.setImageBitmap(edit);
             switcherP.showNext();
             user_phone.setText(phone.getText());
@@ -361,7 +358,7 @@ public class Profile extends Fragment {
     }
 
     private void notifyChanges(String name, String email, String cell, String phone) {
-        mListener.triggerChanges(name,email,cell,phone);
+        mListener.triggerChanges(name, email, cell, phone);
     }
 
     @Override
@@ -376,7 +373,9 @@ public class Profile extends Fragment {
 
     public interface ProfileListener {
         void triggerChanges(String name, String email, String cell, String phone);
+
         void saveProfilePicture(String encoded);
+
         void LoadAdditionalInfo();
     }
 
@@ -395,7 +394,7 @@ public class Profile extends Fragment {
         intentList = addIntentsToList(context, intentList, pickIntent);
 
         if (intentList.size() > 0) {
-            chooserIntent = Intent.createChooser(intentList.remove(intentList.size() - 1),null);
+            chooserIntent = Intent.createChooser(intentList.remove(intentList.size() - 1), null);
             chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Parcelable[]{}));
         }
         return chooserIntent;

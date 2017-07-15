@@ -1,7 +1,10 @@
 package com.example.s213463695.brew;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.DataInputStream;
@@ -14,6 +17,7 @@ import java.util.ArrayList;
 /**
  * Created by s213463695 on 2016/06/20.
  */
+import static android.support.v7.widget.StaggeredGridLayoutManager.TAG;
 import static com.example.s213463695.brew.Home.username;
 import static com.example.s213463695.brew.Login.login;
 import static com.example.s213463695.brew.Signup.signup;
@@ -21,7 +25,8 @@ import static com.example.s213463695.brew.Home.main;
 
 public class ServerThread extends Thread {
 
-    private static final String ip = "csdev.nmmu.ac.za";
+    //private static final String ip = "csdev.nmmu.ac.za"; (Davids server)
+    private static final String ip = "10.112.49.25"; //Local to check if working (Labs PC IP address)
 
     private Socket socket = null;
     private DataInputStream in = null;
@@ -30,6 +35,26 @@ public class ServerThread extends Thread {
     private boolean priceSet;
     private String command;
     private Double price;
+
+    public ArrayList<Food> getFoods() {
+        return foods;
+    }
+
+    public void setFoods(ArrayList<Food> foods) {
+        this.foods = foods;
+    }
+
+    private ArrayList<Food> foods = new ArrayList<>();
+
+    public Solid getSolid() {
+        return solid;
+    }
+
+    public void setSolid(Solid solid) {
+        this.solid = solid;
+    }
+
+    private Solid solid;
 
     public ServerThread() {
         super();
@@ -127,11 +152,54 @@ public class ServerThread extends Thread {
                     //Get food from sever
                     else if (command.equals("#GET_STOCK")) {
 
-                        ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+                        //ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
                         try {
-                            Food food = (Food) objectInputStream.readObject();
-                            FoodOrder.populateList(food);
-                        } catch (ClassNotFoundException e) {
+                            //Food food = (Food) objectInputStream.readObject();
+                            //Solid food = (Solid) objectInputStream.readObject();
+                            int numOfItems = in.readInt();
+                            Log.e(TAG, "run: Number of food items from DB in list = " + numOfItems);
+                            for (int i = 0; i < numOfItems; i++) {
+                                int id = in.readInt();
+                                int type = in.readInt(); //1 is solid, 2 is liquid, 3 is packaged
+                                int picLength = in.readInt();
+                                byte[] curPic = new byte[picLength];
+                                if (picLength > 0) {
+                                    in.readFully(curPic);
+                                    Log.e(TAG, "run: Pic has been received");
+                                }
+                                //int pic = in.readInt();
+                                //pic = R.drawable.brew_logo;
+                                Bitmap pic = BitmapFactory.decodeByteArray(curPic, 0, picLength);
+
+                                double price = in.readDouble();
+                                String title = in.readUTF();
+                                String nutrition = in.readUTF();
+                                String dietary = in.readUTF();
+                                boolean halaal = in.readBoolean();
+                                int quantityAvailable = in.readInt();
+                                System.out.println(id);
+                                double length = in.readDouble();
+                                double width = in.readDouble();
+                                double height = in.readDouble();
+                                double volume = in.readDouble();
+                                switch (type) {
+                                    case 1:
+                                        foods.add(new Solid(pic, price, title, nutrition, dietary, halaal, quantityAvailable, length, width, height));
+                                        break;
+                                    case 2:
+                                        foods.add(new Liquid(pic, price, title, nutrition, dietary, halaal, quantityAvailable, volume));
+                                        break;
+                                    case 3:
+                                        foods.add(new Packaged(pic, price, title, nutrition, dietary, halaal, quantityAvailable, length, width, height));
+                                        break;
+                                }
+                                //FoodOrder foodOrder = FoodOrder.newInstance(new Solid(pic, price, title, nutrition, dietary, halaal, quantityAvailable, length, width, height));
+                                //Home.replaceFragment(foodOrder, "Food Order", false, "OTHER");
+
+                                //FoodOrder.populateList(solid);
+                            }
+                            main.triggerFoodList();
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
 

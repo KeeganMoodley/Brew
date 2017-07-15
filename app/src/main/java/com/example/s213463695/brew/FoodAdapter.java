@@ -1,5 +1,6 @@
 package com.example.s213463695.brew;
 
+import android.graphics.Bitmap;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -62,8 +63,10 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
     @Override
     public void onBindViewHolder(final FoodViewHolder holder, int position) {
         final Food food = foods.get(position);
-        holder.price.setText("R" + String.valueOf(food.getPrice()));
-        holder.img.setImageResource(food.getImage());
+        holder.price.setText("R" + String.format("%.2f", food.getPrice()));
+        //holder.img.setImageResource(food.getImage());
+        //holder.img.setImageBitmap(Bitmap.createScaledBitmap(food.getImage(), holder.img.getWidth(), holder.img.getHeight(), false));
+        holder.img.setImageBitmap(food.getImage());
         holder.title.setText(food.getTitle());
         if (food.isHalaal())
             holder.halaal.setText("Halaal");

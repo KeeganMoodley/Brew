@@ -9,7 +9,11 @@
         <item
             android:id="@+id/place"
             android:icon="@drawable/ic_menu_send"
-            android:title="Place Order" />
+            android:title="Order: Selection" />
+        <item
+            android:id="@+id/pay"
+            android:icon="@drawable/rand"
+            android:title="Order: Payment" />
         <item
             android:id="@+id/view"
             android:icon="@drawable/notification"

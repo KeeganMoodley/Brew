@@ -18,10 +18,11 @@ import static com.example.s213463695.brew.Home.orders;
 public class Notifications extends Fragment {
 
     private NotificationsListener mListener;
-    private ListView listview=null;
-    private OrderAdapter adapter=null;
+    private ListView listview = null;
+    private OrderAdapter adapter = null;
 
-    public Notifications() {}
+    public Notifications() {
+    }
 
     public static Notifications newInstance() {
         Notifications fragment = new Notifications();
@@ -33,45 +34,45 @@ public class Notifications extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v= inflater.inflate(R.layout.fragment_notifications, container, false);
+        View v = inflater.inflate(R.layout.fragment_notifications, container, false);
         mListener.setNotificationTitle("Notifications");
-        listview=(ListView)v.findViewById(R.id.notifications);
-        adapter=new OrderAdapter(getActivity(),orders);
+        listview = (ListView) v.findViewById(R.id.notifications);
+        adapter = new OrderAdapter(getActivity(), orders);
         listview.setAdapter(adapter);
 
-        if(orders.size()==0){
-            Toast.makeText(main,"No orders currently placed!",Toast.LENGTH_LONG).show();
+        if (orders.size() == 0) {
+            Toast.makeText(main, "No orders currently placed!", Toast.LENGTH_LONG).show();
         }
 
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                if(orders.get(position).getStatus().equals("dispatched")){
+                if (orders.get(position).getStatus().equals("dispatched")) {
                     notifyDispatch();
-                }else if(orders.get(position).getStatus().equals("counted")){
+                } else if (orders.get(position).getStatus().equals("counted")) {
                     Snackbar.make(getView(), "Remove by clicking on the right -->", Snackbar.LENGTH_LONG)
                             .setAction("Remove", new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    for (int x=position;x<=orders.size()-1;x++){
-                                        Order curO=orders.get(x);
-                                        curO.setOrderNum(curO.getOrderNum()-1);
+                                    for (int x = position; x <= orders.size() - 1; x++) {
+                                        Order curO = orders.get(x);
+                                        curO.setOrderNum(curO.getOrderNum() - 1);
                                     }
                                     orders.remove(position);
                                     notifyAdapt();
                                     main.createFile();
                                 }
                             }).show();
-                }else{
+                } else {
                     final AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
                     adb.setTitle("Order " + orders.get(position).getOrderNum());
                     adb.setMessage("Do You want to withdraw your order?");
                     adb.setPositiveButton("Withdraw", new AlertDialog.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            if(orders.get(position).getStatus().equals("dispatched")){
-                                Toast.makeText(main,"Sorry the order has been dispatched already!",Toast.LENGTH_LONG).show();
+                            if (orders.get(position).getStatus().equals("dispatched")) {
+                                Toast.makeText(main, "Sorry the order has been dispatched already!", Toast.LENGTH_LONG).show();
                                 dialog.cancel();
-                            }else {
+                            } else {
                                 mListener.cancelOrder(orders.get(position));
                             }
                         }
@@ -89,7 +90,7 @@ public class Notifications extends Fragment {
     }
 
     private void notifyDispatch() {
-        Toast.makeText(main,"Your order has been dispatched and will arrive soon.",Toast.LENGTH_SHORT).show();
+        Toast.makeText(main, "Your order has been dispatched and will arrive soon.", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -99,16 +100,17 @@ public class Notifications extends Fragment {
     }
 
     public void setMainListener(NotificationsListener home) {
-        this.mListener=home;
+        this.mListener = home;
     }
 
     public void notifyAdapt() {
-        if(adapter!=null)
+        if (adapter != null)
             adapter.notifyDataSetChanged();
     }
 
     public interface NotificationsListener {
         void setNotificationTitle(String title);
+
         void cancelOrder(Order order);
     }
 }

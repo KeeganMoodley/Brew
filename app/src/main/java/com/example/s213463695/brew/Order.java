@@ -23,7 +23,7 @@ public class Order {
     private Integer orderNum;
     private String status;
     private OrderThread orderT;
-    private Boolean stopThread =false;
+    private Boolean stopThread = false;
     private Date addedAt;
     private String dateIndex;
 
@@ -35,7 +35,7 @@ public class Order {
         return stopThread;
     }
 
-    public Order(String time, String date, String quantity, String price, Double curMinute, Double curSecond, Integer orderNum, String status,Date added, String dateIndex) {
+    public Order(String time, String date, String quantity, String price, Double curMinute, Double curSecond, Integer orderNum, String status, Date added, String dateIndex) {
         this.time = time;
         this.date = date;
         this.quantity = quantity;
@@ -44,8 +44,8 @@ public class Order {
         this.curSecond = curSecond;
         this.orderNum = orderNum;
         this.status = status;
-        this.addedAt=added;
-        this.dateIndex=dateIndex;
+        this.addedAt = added;
+        this.dateIndex = dateIndex;
     }
 
     public String getDateIndex() {
@@ -56,8 +56,8 @@ public class Order {
         return addedAt;
     }
 
-    public void startThread(){
-        this.orderT=new OrderThread(this);
+    public void startThread() {
+        this.orderT = new OrderThread(this);
         orderT.start();
     }
 
@@ -65,8 +65,8 @@ public class Order {
         this.orderNum = orderNum;
     }
 
-    public void stopThread(){
-        stopThread=true;
+    public void stopThread() {
+        stopThread = true;
     }
 
     public void setCurMinute(Double curMinute) {
@@ -105,11 +105,11 @@ public class Order {
         return price;
     }
 
-    public void decrease(){
-        if(curSecond<=0&&curMinute>0){
+    public void decrease() {
+        if (curSecond <= 0 && curMinute > 0) {
             curMinute--;
-            curSecond=59.0;
-        }else if(curSecond>0) {
+            curSecond = 59.0;
+        } else if (curSecond > 0) {
             curSecond--;
         }
     }
@@ -122,12 +122,13 @@ public class Order {
         return curMinute;
     }
 
-    public class OrderThread extends Thread{
+    public class OrderThread extends Thread {
 
         private Order parent;
-        public OrderThread(Order p){
+
+        public OrderThread(Order p) {
             super();
-            this.parent=p;
+            this.parent = p;
         }
 
         @Override
@@ -137,20 +138,20 @@ public class Order {
                 main.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if(not!=null)
+                        if (not != null)
                             not.notifyAdapt();
                     }
                 });
                 if (getCurMinute() <= 0 && getCurSecond() <= 0) {
-                        main.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                main.changeOrder(parent,"counted");
-                                if(not!=null)
-                                    not.notifyAdapt();
-                            }
-                        });
-                        parent.setStopThread(true);
+                    main.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            main.changeOrder(parent, "counted");
+                            if (not != null)
+                                not.notifyAdapt();
+                        }
+                    });
+                    parent.setStopThread(true);
                 }
                 try {
                     Thread.sleep(1000);

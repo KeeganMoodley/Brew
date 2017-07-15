@@ -58,11 +58,14 @@ public class Home extends AppCompatActivity
         PlaceOrder.PlaceOrderListener,
         Notifications.NotificationsListener,
         Profile.ProfileListener,
-        LocationMain.LocationListener {
+        LocationMain.LocationListener,
+        FoodOrder.FoodOrderListener,
+        Payment.PaymentListener {
 
-    private FragmentManager fragMan;
-    private FragmentTransaction fragTran;
-    private String curTitle = "";
+    private static final String TAG = "Tag";
+    static FragmentManager fragMan;
+    static FragmentTransaction fragTran;
+    private static String curTitle = "";
     private String quantity = "";
     public static ArrayList<Order> orders;
     public static ArrayList<Block> blocks;
@@ -77,10 +80,10 @@ public class Home extends AppCompatActivity
     public static String username = "";
     public TextView user;
     public TextView e_mail;
-    private Integer Count;
-    private Stack<String> titleStack;
+    private static Integer Count;
+    private static Stack<String> titleStack;
     public static boolean event = false;
-    private boolean mainContaining;
+    private static boolean mainContaining;
     public boolean callsActivity = false;
     public boolean disconnected = false;
     private boolean locationManual = true;
@@ -89,6 +92,8 @@ public class Home extends AppCompatActivity
     public static Notifications not = null;
     public static Profile prof = null;
     public static LocationMain loc = null;
+    public static FoodOrder foodOrder = null;
+    public static Payment payment = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -428,14 +433,23 @@ public class Home extends AppCompatActivity
             /*PlaceOrder placeO = PlaceOrder.newInstance();
             placeO.setMainListener(this);
             replaceFragment(placeO, "Place Order", false, "OTHER");*/
-            FoodOrder foodOrder = FoodOrder.newInstance();
-            //foodOrder.setMainListener((FoodOrder.FoodOrderListener) this);
+
+            foodOrder = FoodOrder.newInstance();
+            foodOrder.setMainListener(this);
             replaceFragment(foodOrder, "Food Order", false, "OTHER");
         } else if (id == R.id.view) {
             not = Notifications.newInstance();
             not.setMainListener(this);
             replaceFragment(not, "Notification", false, "OTHER");
-        } else if (id == R.id.location) {
+        }
+        else if (id == R.id.pay) {
+            //not = Notifications.newInstance();
+            //not.setMainListener(this);
+            payment = Payment.newInstance();
+            payment.setPaymentListener(this);
+            replaceFragment(payment, "Payment", false, "OTHER");
+        }
+        else if (id == R.id.location) {
             loc = LocationMain.newInstance();
             loc.setMainListener(this);
             replaceFragment(loc, "Location Setup", false, "OTHER");
@@ -510,12 +524,12 @@ public class Home extends AppCompatActivity
         alert11.show();
     }
 
-    private void replaceFragment(Fragment fragment, String title, Boolean mainContain, String name) {
+    public void replaceFragment(Fragment fragment, String title, Boolean mainContain, String name) {
         mainContaining = mainContain;
         if (!title.equals(""))
             setTitle(title);
-        if (!curTitle.equals("Home") || !curTitle.equals(""))
-            titleStack.push(curTitle);
+            if (!curTitle.equals("Home") || !curTitle.equals(""))
+                titleStack.push(curTitle);
         curTitle = title;
         if (!mainContaining)
             Count++;
@@ -547,10 +561,22 @@ public class Home extends AppCompatActivity
         if (blocks.size() == 0) {
             Toast.makeText(this, "Please wait a moment. Connecting to server...", Toast.LENGTH_SHORT).show();
         } else {
-            PlaceOrder placeO = PlaceOrder.newInstance();
+            /*PlaceOrder placeO = PlaceOrder.newInstance();
             placeO.setMainListener(this);
-            replaceFragment(placeO, "Place Order", false, "ORDER");
+            replaceFragment(placeO, "Place Order", false, "ORDER");*/
+            FoodOrder foodOrder = FoodOrder.newInstance();
+            foodOrder.setMainListener(this);
+            //setTitle("Food Order");
+            replaceFragment(foodOrder, "Food Order", false, "ORDER");
         }
+    }
+
+    @Override
+    public void triggerPaymentFrag() {
+        Payment payment = Payment.newInstance();
+        payment.setPaymentListener(this);
+        //setTitle("Payment");
+        replaceFragment(payment, "Payment selection", false, "Payment");
     }
 
     @Override
@@ -753,6 +779,26 @@ public class Home extends AppCompatActivity
         } else {
             Toast.makeText(this, "Please wait with your order until the event!", Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    public Solid getSolid() {
+        return serverLink.getSolid();
+    }
+
+    @Override
+    public ArrayList<Food> getFoods() {
+        return serverLink.getFoods();
+    }
+
+    @Override
+    public void triggerFoodList() {
+        FoodOrder.populateList(serverLink.getFoods());
+        if (serverLink.getFoods().size() == 0)
+            Log.e(TAG, "triggerFoodList: Foods list is empty from DB");
+        else
+            Log.e(TAG, "triggerFoodList: Foods list has food from DB");
+        FoodOrder.foodAdapter.notifyDataSetChanged();
     }
 
     @Override

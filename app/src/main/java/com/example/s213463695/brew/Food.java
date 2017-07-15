@@ -1,16 +1,22 @@
 package com.example.s213463695.brew;
 
+import android.graphics.Bitmap;
+import android.widget.ImageView;
+
+import java.io.Serializable;
+
 /**
  * Created by s214079694 on 2017/06/29.
  */
 
-public abstract class Food {
-    int image, quantity, quantityAvailable;
+public abstract class Food implements Serializable {
+    int quantity, quantityAvailable;
     double price;
     String title, nutrition, dietary;
     boolean halaal;
+    Bitmap image;
 
-    public Food(int image, double price, String title, String nutrition, String dietary, boolean halaal, int quantityAvailable) {
+    public Food(Bitmap image, double price, String title, String nutrition, String dietary, boolean halaal, int quantityAvailable) {
         this.image = image;
         this.price = price;
         this.title = title;
@@ -30,11 +36,11 @@ public abstract class Food {
             quantity--;
     }
 
-    public int getImage() {
+    public Bitmap getImage() {
         return image;
     }
 
-    public void setImage(int image) {
+    public void setImage(Bitmap image) {
         this.image = image;
     }
 
