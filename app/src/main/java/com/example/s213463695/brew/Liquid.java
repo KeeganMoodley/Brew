@@ -12,10 +12,15 @@ import java.io.Serializable;
 public class Liquid extends Food implements Serializable {
     double volume;
 
-    public Liquid(Bitmap image, double price, String title, String nutrition, String dietary, boolean halaal, int quantityAvailable, double volume) {
-        super(image, price, title, nutrition, dietary, halaal, quantityAvailable);
+    public Liquid(int id, int type, byte[] image, double price, String title, String nutrition, String dietary, boolean halaal, int quantityAvailable, double volume) {
+        super(id, type, image, price, title, nutrition, dietary, halaal, quantityAvailable);
         this.volume = volume;
     }
+
+    /*public Liquid(byte[] image, double price, String title, String nutrition, String dietary, boolean halaal, int quantityAvailable, double volume) {
+        super(image, price, title, nutrition, dietary, halaal, quantityAvailable);
+        this.volume = volume;
+    }*/
 
     public double getVolume() {
         return volume;

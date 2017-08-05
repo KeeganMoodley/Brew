@@ -44,6 +44,7 @@ public class Login extends AppCompatActivity {
             serverLink = new ServerThread();
             serverLink.start();
         }
+        //serverLink.requestFood();
 
         loadSavedLoginInfo();
         _loginButton.setEnabled(true);

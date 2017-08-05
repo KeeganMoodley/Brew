@@ -1,8 +1,10 @@
 package com.example.s213463695.brew;
 
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -11,6 +13,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,16 +21,20 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.net.Socket;
 import java.util.ArrayList;
 
 import static android.support.v7.widget.StaggeredGridLayoutManager.TAG;
+import static com.example.s213463695.brew.Home.main;
 
 /**
  * Created by s214079694 on 2017/06/29.
  */
 
-public class FoodOrder extends Fragment implements TotalListener {
-    static ArrayList<Food> foods = new ArrayList<>();
+public class FoodOrder extends Fragment implements TotalListener, Payment.TotalL {
+    static ArrayList<Food> foods = new ArrayList<>(), curFoods = new ArrayList<>();
     private FoodOrderListener mListener;
 
     public void setPaymentListener(Payment.PaymentListener paymentListener) {
@@ -36,9 +43,10 @@ public class FoodOrder extends Fragment implements TotalListener {
 
     private Payment.PaymentListener paymentListener;
     View view;
-    double total;
+    static double total;
     TextView txtTotal;
     static FoodAdapter foodAdapter = new FoodAdapter(foods);
+    RecyclerView recyclerView;
 
     public static FoodAdapter getFoodAdapter() {
         return foodAdapter;
@@ -50,26 +58,29 @@ public class FoodOrder extends Fragment implements TotalListener {
 
     public static FoodOrder newInstance() {
         FoodOrder fragment = new FoodOrder();
+        //total = 0;
+        //foods.clear();
         Bundle args = new Bundle();
+        args.putDouble("total", total);
         fragment.setArguments(args);
         Login.serverLink.requestFood();
+        //main.triggerFoodList();
         //populateList(food);
         return fragment;
     }
 
     protected static void populateList(ArrayList<Food> food) {
-        /*foods.add(new Food(R.drawable.brew_logo, 30, "Burger", true));
-        foods.add(new Food(R.drawable.brew_logo, 40, "Hot dog", true));
-        foods.add(new Food(R.drawable.brew_logo, 20, "Russian Roll", false));
-        foods.add(new Food(R.drawable.brew_logo, 10, "Hot Chips", true));
-        foods.add(new Food(R.drawable.brew_logo, 100, "Wors", true));
-        foods.add(new Food(R.drawable.brew_logo, 250, "Salad", true));*/
-        //Bitmap icon = BitmapFactory.decodeResource(this.getResources(),R.drawable.brew_logo);
-        //foods.add(new Liquid(icon, 15, "Hotdog", "nutrituion", "dietary", false, 100, 500));
         if (food.size() == 0)
             Log.e(TAG, "populateList: List is empty from db");
-        for (Food f : food)
-            foods.add(f);
+        foods.clear();
+        //foods = (ArrayList<Food>) food.clone();
+        for (Food f : food) {
+            try {
+                foods.add((Food) f.clone());
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -80,7 +91,7 @@ public class FoodOrder extends Fragment implements TotalListener {
         //populateList();
         view = inflater.inflate(R.layout.fragment_order_food, container, false);
 
-        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rView);
+        recyclerView = (RecyclerView) view.findViewById(R.id.rView);
 
         recyclerView.setHasFixedSize(true);
 
@@ -93,12 +104,7 @@ public class FoodOrder extends Fragment implements TotalListener {
         btnContinue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.triggerPaymentFrag();
-                /*FragmentManager fragmentManager = getFragmentManager();
-                android.support.v4.app.FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.container, Payment.newInstance(), "Payment");
-                fragmentTransaction.addToBackStack("PAYMENT");
-                fragmentTransaction.commit();*/
+                mListener.triggerLocation(foods);
             }
         });
 
@@ -106,8 +112,10 @@ public class FoodOrder extends Fragment implements TotalListener {
         //populateList(solid);
         //foods = mListener.getFoods();
         //populateList(mListener.getFoods());
-        if (foods.size() == 0)
+        if (foods.size() == 0) {
             Log.e(TAG, "onCreateView: The food array is empty");
+            main.triggerFoodList();
+        }
         foodAdapter.setTotalListener(FoodOrder.this);
         recyclerView.setAdapter(foodAdapter);
 
@@ -120,6 +128,37 @@ public class FoodOrder extends Fragment implements TotalListener {
             }
         });*/
 
+        /*ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                //awesome code when user grabs recycler card to reorder
+                return false;
+            }
+
+            @Override
+            public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                super.clearView(recyclerView, viewHolder);
+                //awesome code to run when user drops card and completes reorder
+
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                //awesome code when swiping right to remove recycler card and delete SQLite data
+
+                if (direction == ItemTouchHelper.RIGHT) {
+                //whatever code you want the swipe to perform
+
+                }
+                if (direction == ItemTouchHelper.LEFT) {
+                //whatever code you want the swipe to perform
+                    Log.e(TAG, "onSwiped Left: " + total);
+                }
+            }
+        };
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);*/
+
         return view;
     }
 
@@ -131,10 +170,124 @@ public class FoodOrder extends Fragment implements TotalListener {
         txtTotal.setText("Total: R" + String.format("%.2f", total));
     }
 
+    //Handles data input from database (Food Data)
+    public static class obtainFoodInfo extends AsyncTask<Void, Void, Void> {
+        Socket socket = null;
+
+        public obtainFoodInfo(Socket socket) {
+            this.socket = socket;
+            try {
+                backgroundMethod();
+                //int n = this.in.readInt();
+                //Log.e(TAG, "obtainFoodInfo: " + n);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        private void backgroundMethod() {
+            try {
+                DataInputStream in = new DataInputStream(socket.getInputStream());
+                int numOfItems = in.readInt();
+                Log.e(TAG, "run: Number of food items from DB in list = " + numOfItems);
+                for (int i = 0; i < numOfItems; i++) {
+                    int id = in.readInt();
+                    int type = in.readInt(); //1 is solid, 2 is liquid, 3 is packaged
+                    int picLength = in.readInt();
+                    byte[] curPic = new byte[picLength];
+                    if (picLength > 0) {
+                        in.readFully(curPic);
+                        Log.e(TAG, "run: Pic has been received");
+                    }
+                    //Bitmap pic = BitmapFactory.decodeByteArray(curPic, 0, picLength);
+
+                    double price = in.readDouble();
+                    String title = in.readUTF();
+                    String nutrition = in.readUTF();
+                    String dietary = in.readUTF();
+                    boolean halaal = in.readBoolean();
+                    int quantityAvailable = in.readInt();
+                    System.out.println(id);
+                    double length = in.readDouble();
+                    double width = in.readDouble();
+                    double height = in.readDouble();
+                    double volume = in.readDouble();
+                    switch (type) {
+                        case 1:
+                            curFoods.add(new Solid(id, type, curPic, price, title, nutrition, dietary, halaal, quantityAvailable, length, width, height));
+                            break;
+                        case 2:
+                            curFoods.add(new Liquid(id, type, curPic, price, title, nutrition, dietary, halaal, quantityAvailable, volume));
+                            break;
+                        case 3:
+                            curFoods.add(new Packaged(id, type, curPic, price, title, nutrition, dietary, halaal, quantityAvailable, length, width, height));
+                            break;
+                    }
+                    //FoodOrder foodOrder = FoodOrder.newInstance(new Solid(pic, price, title, nutrition, dietary, halaal, quantityAvailable, length, width, height));
+                    //Home.replaceFragment(foodOrder, "Food Order", false, "OTHER");
+
+                    //FoodOrder.populateList(solid);
+                }
+                //main.triggerFoodList();
+                //foods = (ArrayList<Food>) curFoods.clone();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            //backgroundMethod();
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            if (foods.size() == 0) {
+                populateList(curFoods);
+            }
+            foodAdapter.notifyDataSetChanged();
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
+    }
+
     @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (total > 0) {
+            total = 0;
+            //txtTotal.setText("Total: R" + String.format("%.2f", total));
+        }
+        //foodAdapter = new FoodAdapter(foods);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (total > 0) {
+            total = 0;
+            txtTotal.setText("Total: R" + String.format("%.2f", total));
+            populateList(curFoods);
+            foodAdapter = new FoodAdapter(foods);
+            foodAdapter.setTotalListener(FoodOrder.this);
+            recyclerView.setAdapter(foodAdapter);
+        }
     }
 
     public void setMainListener(FoodOrderListener order) {
@@ -147,9 +300,14 @@ public class FoodOrder extends Fragment implements TotalListener {
         getTotal();
     }
 
+    @Override
+    public double getOrderTotal() {
+        return total;
+    }
+
 
     public interface FoodOrderListener {
-        void triggerPaymentFrag();
+        void triggerLocation(ArrayList<Food> foods);
 
         Solid getSolid();
 

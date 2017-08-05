@@ -12,12 +12,19 @@ import java.io.Serializable;
 public class Packaged extends Food implements Serializable {
     double length, width, height;
 
-    public Packaged(Bitmap image, double price, String title, String nutrition, String dietary, boolean halaal, int quantityAvailable, double length, double width, double height) {
-        super(image, price, title, nutrition, dietary, halaal, quantityAvailable);
+    public Packaged(int id, int type, byte[] image, double price, String title, String nutrition, String dietary, boolean halaal, int quantityAvailable, double length, double width, double height) {
+        super(id, type, image, price, title, nutrition, dietary, halaal, quantityAvailable);
         this.length = length;
         this.width = width;
         this.height = height;
     }
+
+    /*public Packaged(byte[] image, double price, String title, String nutrition, String dietary, boolean halaal, int quantityAvailable, double length, double width, double height) {
+        super(image, price, title, nutrition, dietary, halaal, quantityAvailable);
+        this.length = length;
+        this.width = width;
+        this.height = height;
+    }*/
 
     public double getLength() {
         return length;

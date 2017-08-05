@@ -3,6 +3,7 @@ package com.example.s213463695.brew;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import static com.example.s213463695.brew.Home.main;
@@ -26,6 +27,7 @@ public class Order {
     private Boolean stopThread = false;
     private Date addedAt;
     private String dateIndex;
+    private ArrayList<Food> foods;
 
     public void setStopThread(Boolean stopThread) {
         this.stopThread = stopThread;
@@ -35,7 +37,7 @@ public class Order {
         return stopThread;
     }
 
-    public Order(String time, String date, String quantity, String price, Double curMinute, Double curSecond, Integer orderNum, String status, Date added, String dateIndex) {
+    public Order(String time, String date, String quantity, String price, Double curMinute, Double curSecond, Integer orderNum, String status, Date added, String dateIndex, ArrayList<Food> foods) {
         this.time = time;
         this.date = date;
         this.quantity = quantity;
@@ -46,6 +48,7 @@ public class Order {
         this.status = status;
         this.addedAt = added;
         this.dateIndex = dateIndex;
+        this.foods = foods;
     }
 
     public String getDateIndex() {
@@ -99,6 +102,14 @@ public class Order {
 
     public String getQuantity() {
         return quantity;
+    }
+
+    public ArrayList<Food> getFoods() {
+        return foods;
+    }
+
+    public void setFoods(ArrayList<Food> foods) {
+        this.foods = foods;
     }
 
     public String getPrice() {

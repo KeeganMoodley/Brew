@@ -2,6 +2,7 @@ package com.example.s213463695.brew;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -24,6 +25,7 @@ import java.util.List;
 import static com.example.s213463695.brew.Home.main;
 import static com.example.s213463695.brew.Home.blocks;
 import static com.example.s213463695.brew.Home.event;
+import static com.example.s213463695.brew.Home.map;
 import static com.example.s213463695.brew.Home.orders;
 
 public class LocationMain extends Fragment {
@@ -46,6 +48,7 @@ public class LocationMain extends Fragment {
     private String currentSeat = "Select Seat";
     private Boolean prefSetup = false;
     private Boolean settings = false;
+    private ArrayList<Food> foods = new ArrayList<>();
 
     public LocationMain() {
     }
@@ -55,6 +58,15 @@ public class LocationMain extends Fragment {
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle bundle = this.getArguments();
+        if (bundle != null) {
+            foods = (ArrayList<Food>) bundle.getSerializable("food");
+        }
     }
 
     @Override
@@ -199,10 +211,12 @@ public class LocationMain extends Fragment {
                 else if (seat.getSelectedItem().toString().equals("Select Seat"))
                     Toast.makeText(main, "Please select a seat first.", Toast.LENGTH_SHORT).show();
                 else {
-                    if (!settings && (checkOrderStatus() || changeListener()))
-                        mListener.postLocation(currentBlock, currentRow, currentSeat, "no_setting");
-                    else if (checkOrderStatus() || changeListener())
-                        mListener.postLocation(currentBlock, currentRow, currentSeat, "setting");
+                    if (!settings && (checkOrderStatus() || changeListener())) {
+                        //mListener.postLocation(currentBlock, currentRow, currentSeat);
+                        mListener.triggerPaymentFrag(foods, currentBlock, currentRow, currentSeat);
+                    } else if (checkOrderStatus() || changeListener())
+                        //mListener.postLocation(currentBlock, currentRow, currentSeat, "setting"); //Code is executed here
+                        mListener.changeLocation(currentBlock, currentRow, currentSeat);
                     else
                         Toast.makeText(main, "Please wait for your dispatched orders to arrive before You change Your location", Toast.LENGTH_LONG).show();
 //                    if(!settings)
@@ -227,6 +241,7 @@ public class LocationMain extends Fragment {
                 cleared = false;
         }
         return cleared;
+        //return false;
     }
 
     public Boolean changeListener() {
@@ -339,6 +354,12 @@ public class LocationMain extends Fragment {
 
         void previousLocation(LocationMain locationMain);
 
-        void postLocation(String currentBlock, String currentRow, String currentSeat, String setting);
+        void postLocation(String currentBlock, String currentRow, String currentSeat);
+
+        void changeLocation(String currentBlock, String currentRow, String currentSeat);
+
+        void triggerPay(String currentBlock, String currentRow, String currentSeat);
+
+        void triggerPaymentFrag(ArrayList<Food> foods, String currentBlock, String currentRow, String currentSeat);
     }
 }

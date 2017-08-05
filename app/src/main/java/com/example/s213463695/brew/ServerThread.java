@@ -18,6 +18,7 @@ import java.util.ArrayList;
  * Created by s213463695 on 2016/06/20.
  */
 import static android.support.v7.widget.StaggeredGridLayoutManager.TAG;
+import static com.example.s213463695.brew.Home.foodOrder;
 import static com.example.s213463695.brew.Home.username;
 import static com.example.s213463695.brew.Login.login;
 import static com.example.s213463695.brew.Signup.signup;
@@ -25,8 +26,9 @@ import static com.example.s213463695.brew.Home.main;
 
 public class ServerThread extends Thread {
 
-    //private static final String ip = "csdev.nmmu.ac.za"; (Davids server)
+    //private static final String ip = "csdev.nmmu.ac.za"; //Server hosted on csdev
     private static final String ip = "10.112.49.25"; //Local to check if working (Labs PC IP address)
+    //private static final String ip = "192.168.172.2";
 
     private Socket socket = null;
     private DataInputStream in = null;
@@ -35,8 +37,9 @@ public class ServerThread extends Thread {
     private boolean priceSet;
     private String command;
     private Double price;
+    private boolean dataIsSent = false;
 
-    public ArrayList<Food> getFoods() {
+    /*public ArrayList<Food> getFoods() {
         return foods;
     }
 
@@ -44,7 +47,7 @@ public class ServerThread extends Thread {
         this.foods = foods;
     }
 
-    private ArrayList<Food> foods = new ArrayList<>();
+    private ArrayList<Food> foods = new ArrayList<>();*/
 
     public Solid getSolid() {
         return solid;
@@ -147,61 +150,13 @@ public class ServerThread extends Thread {
                         String price = in.readUTF();
                         String androidIndex = in.readUTF();
 
-                        main.triggerNotifications(time, date, quantity, price, androidIndex);
+                        main.triggerNotifications(time, date, quantity, price, androidIndex, Home.finalFoods);
+                        dataIsSent = true;
                     }
                     //Get food from sever
                     else if (command.equals("#GET_STOCK")) {
-
-                        //ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-                        try {
-                            //Food food = (Food) objectInputStream.readObject();
-                            //Solid food = (Solid) objectInputStream.readObject();
-                            int numOfItems = in.readInt();
-                            Log.e(TAG, "run: Number of food items from DB in list = " + numOfItems);
-                            for (int i = 0; i < numOfItems; i++) {
-                                int id = in.readInt();
-                                int type = in.readInt(); //1 is solid, 2 is liquid, 3 is packaged
-                                int picLength = in.readInt();
-                                byte[] curPic = new byte[picLength];
-                                if (picLength > 0) {
-                                    in.readFully(curPic);
-                                    Log.e(TAG, "run: Pic has been received");
-                                }
-                                //int pic = in.readInt();
-                                //pic = R.drawable.brew_logo;
-                                Bitmap pic = BitmapFactory.decodeByteArray(curPic, 0, picLength);
-
-                                double price = in.readDouble();
-                                String title = in.readUTF();
-                                String nutrition = in.readUTF();
-                                String dietary = in.readUTF();
-                                boolean halaal = in.readBoolean();
-                                int quantityAvailable = in.readInt();
-                                System.out.println(id);
-                                double length = in.readDouble();
-                                double width = in.readDouble();
-                                double height = in.readDouble();
-                                double volume = in.readDouble();
-                                switch (type) {
-                                    case 1:
-                                        foods.add(new Solid(pic, price, title, nutrition, dietary, halaal, quantityAvailable, length, width, height));
-                                        break;
-                                    case 2:
-                                        foods.add(new Liquid(pic, price, title, nutrition, dietary, halaal, quantityAvailable, volume));
-                                        break;
-                                    case 3:
-                                        foods.add(new Packaged(pic, price, title, nutrition, dietary, halaal, quantityAvailable, length, width, height));
-                                        break;
-                                }
-                                //FoodOrder foodOrder = FoodOrder.newInstance(new Solid(pic, price, title, nutrition, dietary, halaal, quantityAvailable, length, width, height));
-                                //Home.replaceFragment(foodOrder, "Food Order", false, "OTHER");
-
-                                //FoodOrder.populateList(solid);
-                            }
-                            main.triggerFoodList();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        FoodOrder.obtainFoodInfo obtainFoodInfo = new FoodOrder.obtainFoodInfo(socket);
+                        obtainFoodInfo.execute();
 
                     } else if (command.equals("#DISPATCH_DOWN")) {
                         main.runOnUiThread(new Runnable() {
@@ -384,12 +339,17 @@ public class ServerThread extends Thread {
         }
     }
 
+    public boolean isDataIsSent() {
+        return dataIsSent;
+    }
+
     //Request to server to get food
     public void requestFood() {
         if (isConnected()) {
             try {
                 out.writeUTF("#GET_STOCK");
                 out.flush();
+                Log.e(TAG, "requestFood: Food has been requested");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -438,19 +398,44 @@ public class ServerThread extends Thread {
         return price;
     }
 
-    public void postLocation(String quantity, String block, String row, String seat, String setting, String user) {
+    //Used to send location and food to server, after location has been identified.
+    public void postLocation(String quantity, String block, String row, String seat, String user, ArrayList<Food> finalFoods, Double total, boolean cash) {
         if (isConnected()) {
             try {
+                Log.i(TAG, "postLocation: Order is being sent to the server");
                 out.writeUTF("#INSERT_ORDER");
-                out.writeUTF(quantity);
+                out.writeUTF(quantity);//quantity is "0"
                 out.writeUTF(block);
                 out.writeUTF(row);
                 out.writeUTF(seat);
-                out.writeUTF(setting);
+                //out.writeUTF(setting);
+                out.writeUTF(user);
+                out.writeDouble(total); //total is null
+                out.writeInt(finalFoods.size());
+                for (Food f : finalFoods) {
+                    out.writeInt(f.id);
+                    out.writeInt(f.getQuantity());
+                }
+                out.writeBoolean(cash);
+                out.flush();
+                //dataIsSent = true;
+            } catch (IOException e) {
+                Log.e("THREAD", "ERROR: " + e.getMessage());
+            }
+        }
+    }
+
+    public void changeLocation(String block, String row, String seat, String user) {
+        if (isConnected()) {
+            try {
+                out.writeUTF("#CHANGE_LOCATION");
+                out.writeUTF(block);
+                out.writeUTF(row);
+                out.writeUTF(seat);
                 out.writeUTF(user);
                 out.flush();
             } catch (IOException e) {
-                Log.e("THREAD", "ERROR: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }

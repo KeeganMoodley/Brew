@@ -11,6 +11,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +30,7 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 public class GPSValidation extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
+    private static final String TAG = "";
     Location mLocation;
     TextView txtMyLong, txtMyLat;
     GoogleApiClient mGoogleApiClient;
@@ -131,6 +133,8 @@ public class GPSValidation extends AppCompatActivity implements GoogleApiClient.
             txtMyLong.setText("Longitude : " + mLocation.getLongitude());
             latitude = mLocation.getLatitude();
             longitude = mLocation.getLongitude();
+            Log.e(TAG, "onLocationChanged Lat:\t" + latitude);
+            Log.e(TAG, "onLocationChanged Long:\t" + longitude);
         }
 
         startLocationUpdates();
@@ -156,6 +160,8 @@ public class GPSValidation extends AppCompatActivity implements GoogleApiClient.
             txtMyLong.setText("Longitude : " + mLocation.getLongitude());
             latitude = mLocation.getLatitude();
             longitude = mLocation.getLongitude();
+            Log.e(TAG, "onLocationChanged Lat:\t" + latitude);
+            Log.e(TAG, "onLocationChanged Long:\t" + longitude);
         }
     }
 
@@ -277,13 +283,14 @@ public class GPSValidation extends AppCompatActivity implements GoogleApiClient.
      * Calculate distance between two points in latitude and longitude taking
      * into account height difference. If you are not interested in height
      * difference pass 0.0. Uses Haversine method as its base.
-     *
+     * <p>
      * lat1, lon1 Start point lat2, lon2 End point el1 Start altitude in meters
      * el2 End altitude in meters
+     *
      * @returns Distance in Meters
      */
     public double distance(double lat1, double lat2, double lon1,
-                                  double lon2, double el1, double el2) {
+                           double lon2, double el1, double el2) {
 
         final int R = 6371; // Radius of the earth
 

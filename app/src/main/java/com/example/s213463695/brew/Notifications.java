@@ -2,6 +2,7 @@ package com.example.s213463695.brew;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -9,10 +10,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ExpandableListAdapter;
+import android.widget.ExpandableListView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import static com.example.s213463695.brew.Home.main;
+import static com.example.s213463695.brew.Home.map;
 import static com.example.s213463695.brew.Home.orders;
 
 public class Notifications extends Fragment {
@@ -20,6 +28,7 @@ public class Notifications extends Fragment {
     private NotificationsListener mListener;
     private ListView listview = null;
     private OrderAdapter adapter = null;
+    //private ExpandableListAdapter expandableListAdapter = null;
 
     public Notifications() {
     }
@@ -34,17 +43,26 @@ public class Notifications extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_notifications, container, false);
+        //View v = inflater.inflate(R.layout.fragment_notifications, container, false);
+        View v = inflater.inflate(R.layout.frag_noti, container, false);
         mListener.setNotificationTitle("Notifications");
         listview = (ListView) v.findViewById(R.id.notifications);
-        adapter = new OrderAdapter(getActivity(), orders);
-        listview.setAdapter(adapter);
+        //adapter = new OrderAdapter(getActivity(), orders);
+        //listview.setAdapter(adapter);
+        /*for (Order o : orders) {
+            map.put(o, o.getFoods());
+        }*/
+        ExpandableListView expandableListView = (ExpandableListView) v.findViewById(R.id.expList);
+
+        myOrderAdapter myOrderAdapter = new myOrderAdapter(getActivity(), orders, map);
+
+        expandableListView.setAdapter(myOrderAdapter);
 
         if (orders.size() == 0) {
             Toast.makeText(main, "No orders currently placed!", Toast.LENGTH_LONG).show();
         }
 
-        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        /*listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
                 if (orders.get(position).getStatus().equals("dispatched")) {
@@ -85,7 +103,7 @@ public class Notifications extends Fragment {
                     adb.show();
                 }
             }
-        });
+        });*/
         return v;
     }
 
@@ -111,6 +129,6 @@ public class Notifications extends Fragment {
     public interface NotificationsListener {
         void setNotificationTitle(String title);
 
-        void cancelOrder(Order order);
+        //void cancelOrder(Order order);
     }
 }

@@ -1,20 +1,28 @@
 package com.example.s213463695.brew;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.AppCompatButton;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Base64;
 import android.util.Log;
@@ -33,23 +41,39 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Stack;
 
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static com.example.s213463695.brew.Login.serverLink;
 
 public class Home extends AppCompatActivity
@@ -60,14 +84,17 @@ public class Home extends AppCompatActivity
         Profile.ProfileListener,
         LocationMain.LocationListener,
         FoodOrder.FoodOrderListener,
-        Payment.PaymentListener {
+        Payment.PaymentListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener {
 
-    private static final String TAG = "Tag";
     static FragmentManager fragMan;
     static FragmentTransaction fragTran;
     private static String curTitle = "";
     private String quantity = "";
     public static ArrayList<Order> orders;
+    public static HashMap<Order, List<Food>> map = new HashMap<>();
     public static ArrayList<Block> blocks;
     public static ImageView profilePictureFrame;
     public static Bitmap profilePicture;
@@ -88,12 +115,37 @@ public class Home extends AppCompatActivity
     public boolean disconnected = false;
     private boolean locationManual = true;
     private File orderData;
+    static ArrayList<Food> finalFoods = new ArrayList<>();
 
     public static Notifications not = null;
     public static Profile prof = null;
     public static LocationMain loc = null;
     public static FoodOrder foodOrder = null;
     public static Payment payment = null;
+
+    String block, row, seat;
+    Double total;
+
+    double region = 1000; //Use 35 for realistic demo, 1000 for testing purposes
+
+    private static final String TAG = "";
+    Location mLocation;
+    TextView txtMyLong, txtMyLat;
+    GoogleApiClient mGoogleApiClient;
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+
+    private LocationRequest mLocationRequest;
+    private long UPDATE_INTERVAL = 15000;  /* 15 secs */
+    private long FASTEST_INTERVAL = 5000; /* 5 secs */
+
+    private ArrayList<String> permissionsToRequest;
+    private ArrayList<String> permissionsRejected = new ArrayList<>();
+    private ArrayList<String> permissions = new ArrayList<>();
+
+    private final static int ALL_PERMISSIONS_RESULT = 101;
+
+    private double longitude, latitude;
+    private boolean cash;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,8 +161,8 @@ public class Home extends AppCompatActivity
         titleStack = new Stack();
         blocks = new ArrayList<>();
         fragMan = getSupportFragmentManager();
-
-        HomeContainer homeC = HomeContainer.newInstance();
+        //buildGoogleAPIClient();
+        HomeContainer homeC = HomeContainer.newInstance(this);
         homeC.setMainListener(this);
         replaceFragment(homeC, "Home", true, "HOME");
         titleStack.push(curTitle);
@@ -170,7 +222,7 @@ public class Home extends AppCompatActivity
             serverLink.getUpdate();
         }
         try {
-            readOrderData();
+            //readOrderData();
             createFile();
         } catch (Exception e) {
         }
@@ -184,13 +236,14 @@ public class Home extends AppCompatActivity
         } catch (IOException e) {
             e.printStackTrace();
         }
-        for (Order or : orders) {
-            writeToFile(or.getTime(), or.getDate(), or.getQuantity(), or.getPrice(), or.getCurMinute(), or.getCurSecond(), or.getOrderNum(), or.getStatus(), or.getAddedAt(), or.getDateIndex());
-        }
+        /*for (Order or : orders) {
+            writeToFile(or.getTime(), or.getDate(), or.getQuantity(), or.getPrice(), or.getCurMinute(), or.getCurSecond(), or.getOrderNum(), or.getStatus(), or.getAddedAt(), or.getDateIndex(), or.getFoods());
+        }*/
+        writetoFileFoodOrdersObject(orders);
     }
 
     private void readOrderData() {
-        try {
+        /*try {
             Scanner scan = new Scanner(new File(getFilesDir().getAbsolutePath() + "/order_data.txt"));
             while (scan.hasNext()) {
                 String time = scan.nextLine();
@@ -230,6 +283,63 @@ public class Home extends AppCompatActivity
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (ParseException e) {
+            e.printStackTrace();
+        }*/
+
+        //My code
+        try {
+            //Scanner scan = new Scanner(new File(getFilesDir().getAbsolutePath() + "/order_data.txt"));
+            FileInputStream fileInputStream = new FileInputStream(new File(getFilesDir().getAbsolutePath() + "/order_data.txt"));
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            orders.clear();
+            int num = objectInputStream.readInt();
+            for (int i = 0; i < num; i++) {
+                Order order = (Order) objectInputStream.readObject();
+                orders.add(order);
+            }
+            for (Order or : orders) {
+                String time = or.getTime();
+                String date = or.getDate();
+                String quantity = or.getQuantity();
+                String price = or.getPrice();
+                String number = String.valueOf(or.getOrderNum());
+                String status = or.getStatus();
+                String stopTime = String.valueOf(or.getAddedAt());
+                String dateIndex = or.getDateIndex();
+                ArrayList<Food> foods = or.getFoods();
+                //, , , , or.getCurMinute(), or.getCurSecond(), , , or.getAddedAt(), , or.getFoods()
+                Order prevO = null;
+                Date curDate = new Date();
+                Date prevDate = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").parse(stopTime);
+                if (status.equals("counted")) {
+                    prevO = new Order(time, date, quantity, price, 0.0, 0.0, Integer.parseInt(number), status, prevDate, dateIndex, foods);
+                    prevO.setStopThread(true);
+                } else {
+                    Double secondsBetween = (int) (curDate.getTime() - prevDate.getTime()) / 1000.0;
+                    Double secondsStop = 180.0;
+                    Double secondsLeft = secondsStop - secondsBetween;
+
+                    if (secondsLeft >= 0 && secondsLeft < 60) {
+                        prevO = new Order(time, date, quantity, price, 0.0, secondsLeft, Integer.parseInt(number), "queue", prevDate, dateIndex, foods);
+                        prevO.startThread();
+                    } else {
+                        Double minutes = Math.floor(secondsLeft / 60);
+                        Double seconds = secondsLeft % 60;
+                        prevO = new Order(time, date, quantity, price, minutes, seconds, Integer.parseInt(number), "queue", prevDate, dateIndex, foods);
+                        prevO.startThread();
+                    }
+                }
+                if (prevO != null) {
+                    orders.add(prevO);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
@@ -417,59 +527,82 @@ public class Home extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.home) {
-            titleStack.push(curTitle);
-            Count = 0;
-            HomeContainer home = new HomeContainer();
-            home.setMainListener(this);
-            replaceFragment(home, "Home", true, "HOME");
-        } else if (id == R.id.place) {
-            /*PlaceOrder placeO = PlaceOrder.newInstance();
-            placeO.setMainListener(this);
-            replaceFragment(placeO, "Place Order", false, "OTHER");*/
+        switch (id) {
+            case R.id.home: {
+                titleStack.push(curTitle);
+                Count = 0;
+                //HomeContainer home = new HomeContainer();
+                HomeContainer home = HomeContainer.newInstance(this);
+                home.setMainListener(this);
+                replaceFragment(home, "Home", true, "HOME");
+                break;
+            }
+            case R.id.place: {
+                PlaceOrder placeO = PlaceOrder.newInstance();
+                placeO.setMainListener(this);
+                replaceFragment(placeO, "Place Order", false, "OTHER");
 
-            foodOrder = FoodOrder.newInstance();
-            foodOrder.setMainListener(this);
-            replaceFragment(foodOrder, "Food Order", false, "OTHER");
-        } else if (id == R.id.view) {
-            not = Notifications.newInstance();
-            not.setMainListener(this);
-            replaceFragment(not, "Notification", false, "OTHER");
-        }
-        else if (id == R.id.pay) {
-            //not = Notifications.newInstance();
-            //not.setMainListener(this);
-            payment = Payment.newInstance();
-            payment.setPaymentListener(this);
-            replaceFragment(payment, "Payment", false, "OTHER");
-        }
-        else if (id == R.id.location) {
-            loc = LocationMain.newInstance();
-            loc.setMainListener(this);
-            replaceFragment(loc, "Location Setup", false, "OTHER");
-            loc.settingsIndication(true);
-//        } else if (id == R.id.tester) {
-//            serverLink.triggerTestRun();
-        } else if (id == R.id.password) {
-            passwordSetup();
-        } else if (id == R.id.logout) {
-            SharedPreferences preferences = getSharedPreferences("brew_prefs", MODE_MULTI_PROCESS);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.remove("password");
-            editor.commit();
+                /*foodOrder = FoodOrder.newInstance();
+                foodOrder.setMainListener(this);
+                replaceFragment(foodOrder, "Food Order", false, "OTHER");*/
+                break;
+            }
+            case R.id.view: {
+                not = Notifications.newInstance();
+                not.setMainListener(this);
+                replaceFragment(not, "Notification", false, "OTHER");
+                break;
+            }
+            case R.id.pay: {
+                //not = Notifications.newInstance();
+                //not.setMainListener(this);
+                //foodOrder = FoodOrder.newInstance();
+                //foodOrder.setMainListener(this);
+                total = foodOrder.getOrderTotal();
+                payment = Payment.newInstance(total);
+                payment.setPaymentListener(this);
+                /*Bundle bundle = new Bundle();
+                bundle.putDouble("total", total);
+                payment.setArguments(bundle);*/
+                replaceFragment(payment, "Payment", false, "OTHER");
+                break;
+            }
+            case R.id.location: {
+                loc = LocationMain.newInstance();
+                loc.setMainListener(this);
+                replaceFragment(loc, "Location Setup", false, "OTHER");
+                loc.settingsIndication(true);
+                break;
+            }
+            case R.id.password: {
+                passwordSetup();
+                break;
+            }
+            case R.id.logout: {
+                SharedPreferences preferences = getSharedPreferences("brew_prefs", MODE_MULTI_PROCESS);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.remove("password");
+                //editor.commit();
+                editor.apply();
 
-            callsActivity = true;
-            serverLink.cancelConnection("homeOut");
-            disconnected = true;
+                callsActivity = true;
+                serverLink.cancelConnection("homeOut");
+                disconnected = true;
 
-            Intent logout = new Intent(Home.this, Login.class);
-            startActivity(logout);
+                Intent logout = new Intent(Home.this, Login.class);
+                startActivity(logout);
+                break;
+            }
+            default:
+                break;
+
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -528,8 +661,8 @@ public class Home extends AppCompatActivity
         mainContaining = mainContain;
         if (!title.equals(""))
             setTitle(title);
-            if (!curTitle.equals("Home") || !curTitle.equals(""))
-                titleStack.push(curTitle);
+        if (!curTitle.equals("Home") || !curTitle.equals(""))
+            titleStack.push(curTitle);
         curTitle = title;
         if (!mainContaining)
             Count++;
@@ -572,9 +705,24 @@ public class Home extends AppCompatActivity
     }
 
     @Override
-    public void triggerPaymentFrag() {
-        Payment payment = Payment.newInstance();
+    public void triggerPaymentFrag(ArrayList<Food> foods, String currentBlock, String currentRow, String currentSeat) {
+        //Double total = foodOrder.getOrderTotal();
+        /*for (Food f : foods) {
+            if (f.quantity > 0) {
+                finalFoods.add(f);
+            }
+        }*/
+        total = FoodOrder.total;
+        payment = Payment.newInstance(total);
         payment.setPaymentListener(this);
+        block = currentBlock;
+        row = currentRow;
+        seat = currentSeat;
+        Bundle bundle = new Bundle();
+        bundle.putString("Block", currentBlock);
+        bundle.putString("Row", currentRow);
+        bundle.putString("Seat", currentSeat);
+        bundle.putDouble("total", total);
         //setTitle("Payment");
         replaceFragment(payment, "Payment selection", false, "Payment");
     }
@@ -623,7 +771,7 @@ public class Home extends AppCompatActivity
     }
 
     @Override
-    public void postLocation(String currentBlock, String currentRow, String currentSeat, String setting) {
+    public void postLocation(String currentBlock, String currentRow, String currentSeat) {
         SharedPreferences preferences = main.getSharedPreferences("brew_prefs", MODE_MULTI_PROCESS);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString("currentBlock", currentBlock);
@@ -633,7 +781,39 @@ public class Home extends AppCompatActivity
             editor.apply();
         } catch (Exception e) {
         }
-        serverLink.postLocation(quantity, currentBlock, currentRow, currentSeat, setting, username);
+        Log.i(TAG, "postLocation: Another one");
+        Iterator iterator = map.entrySet().iterator();
+        int q = 0;
+        while (iterator.hasNext()) {
+            Map.Entry<Order, List<Food>> pair = (Map.Entry<Order, List<Food>>) iterator.next();
+            q += pair.getValue().size();
+        }
+        quantity = String.valueOf(q);
+        q = 0;
+        for (Food f : finalFoods) {
+            q += f.getQuantity();
+        }
+        quantity = String.valueOf(q);
+        serverLink.postLocation(quantity, currentBlock, currentRow, currentSeat, username, finalFoods, total, cash);
+    }
+
+    @Override
+    public void triggerPay(String currentBlock, String currentRow, String currentSeat) {
+
+    }
+
+    @Override
+    public void changeLocation(String currentBlock, String currentRow, String currentSeat) {
+        SharedPreferences preferences = main.getSharedPreferences("brew_prefs", MODE_MULTI_PROCESS);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("currentBlock", currentBlock);
+        editor.putString("currentRow", currentRow);
+        editor.putString("currentSeat", currentSeat);
+        try {
+            editor.apply();
+        } catch (Exception e) {
+        }
+        serverLink.changeLocation(currentBlock, currentRow, currentSeat, username);
     }
 
     @Override
@@ -641,17 +821,20 @@ public class Home extends AppCompatActivity
         return serverLink.getBeerPrice();
     }
 
-    public void triggerNotifications(String t, String d, String q, String p, String androidIndex) {
+    public void triggerNotifications(String t, String d, String q, String p, String androidIndex, ArrayList<Food> foods) {
         Order newO = null;
         Date curDate = new Date();
         if (orders.size() != 0) {
-            newO = new Order(t, d, q, p, 2.0, 59.0, orders.get(orders.size() - 1).getOrderNum() + 1, "queue", curDate, androidIndex);
+            newO = new Order(t, d, q, p, 2.0, 59.0, orders.get(orders.size() - 1).getOrderNum() + 1, "queue", curDate, androidIndex, foods);
             orders.add(newO);
-            writeToFile(t, d, q, p, 2.0, 59.0, orders.get(orders.size() - 1).getOrderNum() + 1, "queue", curDate, androidIndex);
+            writeToFile(t, d, q, p, 2.0, 59.0, orders.get(orders.size() - 1).getOrderNum() + 1, "queue", curDate, androidIndex, foods);
         } else {
-            newO = new Order(t, d, q, p, 2.0, 59.0, orders.size() + 1, "queue", curDate, androidIndex);
+            newO = new Order(t, d, q, p, 2.0, 59.0, orders.size() + 1, "queue", curDate, androidIndex, foods);
             orders.add(newO);
-            writeToFile(t, d, q, p, 2.0, 59.0, orders.size() + 1, "queue", curDate, androidIndex);
+            writeToFile(t, d, q, p, 2.0, 59.0, orders.size() + 1, "queue", curDate, androidIndex, foods);
+        }
+        for (Order o : orders) {
+            map.put(o, o.getFoods());
         }
         not = Notifications.newInstance();
         not.setMainListener(this);
@@ -663,7 +846,22 @@ public class Home extends AppCompatActivity
         Toast.makeText(main, "Sorry, the responsible dispatch-point is inactive at the moment...", Toast.LENGTH_LONG).show();
     }
 
-    private void writeToFile(String t, String d, String q, String p, double v, double v1, int i, String queue, Date curDate, String dateIndex) {
+    private void writetoFileFoodOrdersObject(ArrayList<Order> orders) {
+        try {
+            FileOutputStream fos = new FileOutputStream(orderData);
+            ObjectOutputStream os = new ObjectOutputStream(fos);
+            os.writeInt(orders.size());
+            for (Order o : orders) {
+                os.writeObject(o);
+            }
+            os.close();
+            fos.close();
+        } catch (Exception e) {
+            Log.e(TAG, "writetoFileFoodOrdersObject: " + e.getMessage());
+        }
+    }
+
+    private void writeToFile(String t, String d, String q, String p, double v, double v1, int i, String queue, Date curDate, String dateIndex, ArrayList<Food> foods) {
         try {
             BufferedWriter fo = new BufferedWriter(new FileWriter(orderData + "/order_data.txt", true));
             fo.write(t);
@@ -686,6 +884,21 @@ public class Home extends AppCompatActivity
             fo.write(System.getProperty("line.separator"));
             fo.write(dateIndex);
             fo.write(System.getProperty("line.separator"));
+            for (Food f : foods) {
+                fo.write(String.valueOf(f.image));
+                fo.write(System.getProperty("line.separator"));
+                //double price, String title, String nutrition, String dietary, boolean halaal, int quantityAvailable
+                fo.write(f.title);
+                fo.write(System.getProperty("line.separator"));
+                fo.write(f.nutrition);
+                fo.write(System.getProperty("line.separator"));
+                fo.write(f.dietary);
+                fo.write(System.getProperty("line.separator"));
+                fo.write(String.valueOf(f.halaal));
+                fo.write(System.getProperty("line.separator"));
+                fo.write(String.valueOf(f.quantityAvailable));
+                fo.write(System.getProperty("line.separator"));
+            }
             fo.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -705,10 +918,10 @@ public class Home extends AppCompatActivity
         setTitle(title);
     }
 
-    @Override
+    /*@Override
     public void cancelOrder(Order order) {
         serverLink.removeOrder(order);
-    }
+    }*/
 
     public void orderRemoved(String time) {
 
@@ -782,23 +995,44 @@ public class Home extends AppCompatActivity
     }
 
     @Override
+    public void triggerLocation(ArrayList<Food> foods) {
+        //this.foods = foods;
+        //this.cash = cash;
+        loc = LocationMain.newInstance();
+        loc.setMainListener(this);
+        for (Food value : foods) {
+            if (value.quantity > 0) {
+                finalFoods.add(value);
+            }
+        }
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("food", foods);
+        loc.setArguments(bundle);
+        replaceFragment(loc, "Location Setup", false, "OTHER");
+        //loc.settingsIndication(true);
+    }
+
+    @Override
     public Solid getSolid() {
         return serverLink.getSolid();
     }
 
     @Override
     public ArrayList<Food> getFoods() {
-        return serverLink.getFoods();
+        //return serverLink.getFoods();
+        return null;
     }
 
     @Override
     public void triggerFoodList() {
-        FoodOrder.populateList(serverLink.getFoods());
-        if (serverLink.getFoods().size() == 0)
-            Log.e(TAG, "triggerFoodList: Foods list is empty from DB");
-        else
-            Log.e(TAG, "triggerFoodList: Foods list has food from DB");
-        FoodOrder.foodAdapter.notifyDataSetChanged();
+        /*if (FoodOrder.foods.size() == 0) {
+            FoodOrder.populateList(serverLink.getFoods());
+            if (serverLink.getFoods().size() == 0)
+                Log.e(TAG, "triggerFoodList: Foods list is empty from DB");
+            else
+                Log.e(TAG, "triggerFoodList: Foods list has food from DB");
+            //FoodOrder.foodAdapter.notifyDataSetChanged();
+        }*/
     }
 
     @Override
@@ -881,13 +1115,18 @@ public class Home extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         if (!callsActivity) {
             if (!disconnected) {
                 serverLink.cancelConnection("login");
                 disconnected = true;
             }
         }
-        super.onDestroy();
+        if (!checkPlayServices()) {
+            //latLng.setText("Please install Google Play services.");
+            Toast.makeText(this, "Please install Google Play services.", Toast.LENGTH_SHORT).show();
+        }
+        stopLocationUpdates();
     }
 
     @Override
@@ -897,6 +1136,18 @@ public class Home extends AppCompatActivity
                 serverLink.cancelConnection("login");
                 disconnected = true;
             }
+        }
+        try {
+            SharedPreferences preferences = main.getSharedPreferences("brew_prefs", MODE_MULTI_PROCESS);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("currentBlock", block);
+            editor.putString("currentRow", row);
+            editor.putString("currentSeat", seat);
+            editor.putString("total", String.valueOf(total));
+            //editor.putString("finalFood", finalFoods);
+            editor.apply();
+        } catch (Exception e) {
+
         }
         super.onPause();
     }
@@ -909,13 +1160,69 @@ public class Home extends AppCompatActivity
         }
         disconnected = false;
         callsActivity = false;
-        /*Boolean validLocation = checkLocation();
-        if (validLocation) {
-            Toast.makeText(this, "Location is valid", Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(this, "You are not at the stadium", Toast.LENGTH_LONG).show();
-        }*/
+
+        Intent intent = getIntent();
+        if (intent != null) {
+            Uri uri = intent.getData();
+            if (uri != null) {
+                String s = uri.getHost();
+                if (s.contains("success")) {
+                    //go to location
+                    //triggerLocation(finalFoods);
+                    try {
+                        new sendOrder().execute();
+                        /*SharedPreferences preferences = main.getSharedPreferences("brew_prefs", MODE_MULTI_PROCESS);
+                        block = preferences.getString("currentBlock", "");
+                        row = preferences.getString("currentRow", "");
+                        seat = preferences.getString("currentSeat", "");
+                        total = Double.valueOf(preferences.getString("total","0"));
+                        Log.i(TAG, "onResume: working");
+                        postLocation(block, row, seat);*/
+                    } catch (Exception e) {
+
+                    }
+                } else {
+                    //go to payment, display toast
+                    triggerPaymentFrag(finalFoods, block, row, seat);
+                    Toast.makeText(main, "Zapper payment was unsuccessful", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
         super.onResume();
+    }
+
+    class sendOrder extends AsyncTask<Void, Void, Void> {
+        ProgressDialog dialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            dialog = new ProgressDialog(main);
+            dialog.setMessage("Sending order to merchant");
+            dialog.setIndeterminate(true);
+            dialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            SharedPreferences preferences = main.getSharedPreferences("brew_prefs", MODE_MULTI_PROCESS);
+            block = preferences.getString("currentBlock", "");
+            row = preferences.getString("currentRow", "");
+            seat = preferences.getString("currentSeat", "");
+            total = Double.valueOf(preferences.getString("total", "0"));
+            Log.i(TAG, "onResume: working");
+            postLocation(block, row, seat);
+            while (!serverLink.isDataIsSent()) {
+                Log.i(TAG, "doInBackground: Waiting to send data");
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            dialog.dismiss();
+        }
     }
 
     public Boolean getManualBool() {
@@ -962,12 +1269,12 @@ public class Home extends AppCompatActivity
 
                         Boolean settings = loc.getSettings();
 
-                        if (!settings) {
+                        /*if (!settings) {
                             postLocation(block, row, seat, "no_setting");
                         } else {
                             postLocation(block, row, seat, "setting");
                             loc.setLocation(block, row, seat);
-                        }
+                        }*/
                     } catch (Exception e) {
                     }
                 }
@@ -1017,5 +1324,186 @@ public class Home extends AppCompatActivity
                 }
             }
         }
+    }
+
+    private ArrayList<String> findUnAskedPermissions(ArrayList<String> wanted) {
+        ArrayList<String> result = new ArrayList<String>();
+
+        for (String perm : wanted) {
+            if (!hasPermission(perm)) {
+                result.add(perm);
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (mGoogleApiClient != null) {
+            mGoogleApiClient.connect();
+        }
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+
+        if (mLocation != null) {
+            //latLng.setText("Latitude : "+mLocation.getLatitude()+" , Longitude : "+mLocation.getLongitude());
+            //txtMyLat.setText("Latitude : " + mLocation.getLatitude());
+            //txtMyLong.setText("Longitude : " + mLocation.getLongitude());
+            latitude = mLocation.getLatitude();
+            longitude = mLocation.getLongitude();
+            Log.e(TAG, "onLocationChanged Lat:\t" + latitude);
+            Log.e(TAG, "onLocationChanged Long:\t" + longitude);
+        }
+
+        startLocationUpdates();
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+
+        if (location != null) {
+            //latLng.setText("Latitude : "+mLocation.getLatitude()+" , Longitude : "+mLocation.getLongitude());
+            //txtMyLat.setText("Latitude : " + mLocation.getLatitude());
+            //txtMyLong.setText("Longitude : " + mLocation.getLongitude());
+            latitude = mLocation.getLatitude();
+            longitude = mLocation.getLongitude();
+            Log.e(TAG, "onLocationChanged Lat:\t" + latitude);
+            Log.e(TAG, "onLocationChanged Long:\t" + longitude);
+        }
+    }
+
+    private boolean checkPlayServices() {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
+                        .show();
+            } else
+                finish();
+
+            return false;
+        }
+        return true;
+    }
+
+    protected void startLocationUpdates() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(UPDATE_INTERVAL);
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(getApplicationContext(), "Enable Permissions", Toast.LENGTH_LONG).show();
+        }
+
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, mLocationRequest, this);
+
+
+    }
+
+    private boolean hasPermission(String permission) {
+        if (canMakeSmores()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                return (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED);
+            }
+        }
+        return true;
+    }
+
+    private boolean canMakeSmores() {
+        return (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1);
+    }
+
+
+    @TargetApi(Build.VERSION_CODES.M)
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+
+        switch (requestCode) {
+
+            case ALL_PERMISSIONS_RESULT:
+                for (String perms : permissionsToRequest) {
+                    if (!hasPermission(perms)) {
+                        permissionsRejected.add(perms);
+                    }
+                }
+
+                if (permissionsRejected.size() > 0) {
+
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (shouldShowRequestPermissionRationale(permissionsRejected.get(0))) {
+                            showMessageOKCancel("These permissions are mandatory for the application. Please allow access.",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                                requestPermissions(permissionsRejected.toArray(new String[permissionsRejected.size()]), ALL_PERMISSIONS_RESULT);
+                                            }
+                                        }
+                                    });
+                            return;
+                        }
+                    }
+
+                }
+
+                break;
+        }
+
+    }
+
+    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
+        new AlertDialog.Builder(Home.this)
+                .setMessage(message)
+                .setPositiveButton("OK", okListener)
+                .setNegativeButton("Cancel", null)
+                .create()
+                .show();
+    }
+
+
+    public void stopLocationUpdates() {
+        if (mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi
+                    .removeLocationUpdates(mGoogleApiClient, this);
+            mGoogleApiClient.disconnect();
+        }
+    }
+
+    @Override
+    public void triggerNotifi() {
+        cash = true;
+        postLocation(block, row, seat);
     }
 }

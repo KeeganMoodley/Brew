@@ -12,12 +12,19 @@ import java.io.Serializable;
 public class Solid extends Food implements Serializable{
     double length, width, height;
 
-    public Solid(Bitmap image, double price, String title, String nutrition, String dietary, boolean halaal, int quantityAvailable, double length, double width, double height) {
-        super(image, price, title, nutrition, dietary, halaal, quantityAvailable);
+    public Solid(int id, int type, byte[] image, double price, String title, String nutrition, String dietary, boolean halaal, int quantityAvailable, double length, double width, double height) {
+        super(id, type, image, price, title, nutrition, dietary, halaal, quantityAvailable);
         this.length = length;
         this.width = width;
         this.height = height;
     }
+
+    /*public Solid(byte[] image, double price, String title, String nutrition, String dietary, boolean halaal, int quantityAvailable, double length, double width, double height) {
+        super(image, price, title, nutrition, dietary, halaal, quantityAvailable);
+        this.length = length;
+        this.width = width;
+        this.height = height;
+    }*/
 
     public double getLength() {
         return length;
