@@ -26,9 +26,8 @@ import static com.example.s213463695.brew.Home.main;
 
 public class ServerThread extends Thread {
 
-    //private static final String ip = "csdev.nmmu.ac.za"; //Server hosted on csdev
-    private static final String ip = "10.112.49.25"; //Local to check if working (Labs PC IP address)
-    //private static final String ip = "192.168.172.2";
+    private static final String ip = "csdev.nmmu.ac.za"; //Server hosted on csdev
+    //private static final String ip = "10.112.49.25"; //Local to check if working (Labs PC IP address)
 
     private Socket socket = null;
     private DataInputStream in = null;
@@ -149,8 +148,9 @@ public class ServerThread extends Thread {
                         String quantity = in.readUTF();
                         String price = in.readUTF();
                         String androidIndex = in.readUTF();
+                        int minute = in.readInt();
 
-                        main.triggerNotifications(time, date, quantity, price, androidIndex, Home.finalFoods);
+                        main.triggerNotifications(time, date, quantity, price, androidIndex, Home.finalFoods, minute);
                         dataIsSent = true;
                     }
                     //Get food from sever

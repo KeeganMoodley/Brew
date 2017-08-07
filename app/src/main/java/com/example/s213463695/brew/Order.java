@@ -19,7 +19,7 @@ public class Order {
     private String date;
     private String quantity;
     private String price;
-    private Double curMinute;
+    private Double curMinute, total;
     private Double curSecond;
     private Integer orderNum;
     private String status;
@@ -37,7 +37,7 @@ public class Order {
         return stopThread;
     }
 
-    public Order(String time, String date, String quantity, String price, Double curMinute, Double curSecond, Integer orderNum, String status, Date added, String dateIndex, ArrayList<Food> foods) {
+    public Order(String time, String date, String quantity, String price, Double curMinute, Double curSecond, Integer orderNum, String status, Date added, String dateIndex, ArrayList<Food> foods, double total) {
         this.time = time;
         this.date = date;
         this.quantity = quantity;
@@ -49,6 +49,7 @@ public class Order {
         this.addedAt = added;
         this.dateIndex = dateIndex;
         this.foods = foods;
+        this.total = total;
     }
 
     public String getDateIndex() {
@@ -62,6 +63,10 @@ public class Order {
     public void startThread() {
         this.orderT = new OrderThread(this);
         orderT.start();
+    }
+
+    public Double getTotal() {
+        return total;
     }
 
     public void setOrderNum(Integer orderNum) {

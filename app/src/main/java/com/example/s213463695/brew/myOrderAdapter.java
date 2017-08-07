@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -108,10 +109,15 @@ public class myOrderAdapter extends BaseExpandableListAdapter {
         TextView queue = (TextView) convertView.findViewById(R.id.txtQueue);
         lblListHeader.setTypeface(null, Typeface.BOLD);
         if (!order.getStopThread()) {
-            if (order.getCurSecond() < 10)
-                time.setText("(0" + String.format("%1.0f", order.getCurMinute()) + ":0" + String.format("%1.0f", order.getCurSecond()) + ")");
+            if (order.getCurMinute() < 10) {
+                if (order.getCurSecond() < 10)
+                    time.setText("(0" + String.format("%1.0f", order.getCurMinute()) + ":0" + String.format("%1.0f", order.getCurSecond()) + ")");
+                else
+                    time.setText("(0" + String.format("%1.0f", order.getCurMinute()) + ":" + String.format("%2.0f", order.getCurSecond()) + ")");
+            } else if (order.getCurSecond() < 10)
+                time.setText("(" + String.format("%1.0f", order.getCurMinute()) + ":0" + String.format("%1.0f", order.getCurSecond()) + ")");
             else
-                time.setText("(0" + String.format("%1.0f", order.getCurMinute()) + ":" + String.format("%2.0f", order.getCurSecond()) + ")");
+                time.setText("(" + String.format("%1.0f", order.getCurMinute()) + ":" + String.format("%2.0f", order.getCurSecond()) + ")");
         } else {
             time.setText("");
         }
@@ -119,9 +125,17 @@ public class myOrderAdapter extends BaseExpandableListAdapter {
             queue.setText("Order in queue ");
         else
             queue.setText("Order dispatched");
-        lblListHeader.setText("Order 1");
-        total.setText("R" + String.format("%.2f", FoodOrder.total));
+        lblListHeader.setText("Order " + order.getOrderNum());
+        total.setText("R" + String.format("%.2f", order.getTotal()));
         return convertView;
+    }
+
+    private class timeThread extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            return null;
+        }
     }
 
     @Override

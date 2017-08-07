@@ -134,6 +134,7 @@ public class LocationMain extends Fragment {
                         seatNames.add("Select Seat");
                         rowNames.clear();
                         rowNames.add("Select Row");
+                        rowNames.add("Select Row");
                         row.setSelection(0);
                         seat.setSelection(0);
                         row.setEnabled(false);

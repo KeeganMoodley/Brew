@@ -36,6 +36,7 @@ import static com.example.s213463695.brew.Home.main;
 public class FoodOrder extends Fragment implements TotalListener, Payment.TotalL {
     static ArrayList<Food> foods = new ArrayList<>(), curFoods = new ArrayList<>();
     private FoodOrderListener mListener;
+    static boolean addFood = true;
 
     public void setPaymentListener(Payment.PaymentListener paymentListener) {
         this.paymentListener = paymentListener;
@@ -121,44 +122,6 @@ public class FoodOrder extends Fragment implements TotalListener, Payment.TotalL
 
         getTotal();
 
-        /*recyclerView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                calcTotal();
-            }
-        });*/
-
-        /*ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.RIGHT) {
-            @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                //awesome code when user grabs recycler card to reorder
-                return false;
-            }
-
-            @Override
-            public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-                super.clearView(recyclerView, viewHolder);
-                //awesome code to run when user drops card and completes reorder
-
-            }
-
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                //awesome code when swiping right to remove recycler card and delete SQLite data
-
-                if (direction == ItemTouchHelper.RIGHT) {
-                //whatever code you want the swipe to perform
-
-                }
-                if (direction == ItemTouchHelper.LEFT) {
-                //whatever code you want the swipe to perform
-                    Log.e(TAG, "onSwiped Left: " + total);
-                }
-            }
-        };
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
-        itemTouchHelper.attachToRecyclerView(recyclerView);*/
-
         return view;
     }
 
@@ -212,24 +175,21 @@ public class FoodOrder extends Fragment implements TotalListener, Payment.TotalL
                     double width = in.readDouble();
                     double height = in.readDouble();
                     double volume = in.readDouble();
-                    switch (type) {
-                        case 1:
-                            curFoods.add(new Solid(id, type, curPic, price, title, nutrition, dietary, halaal, quantityAvailable, length, width, height));
-                            break;
-                        case 2:
-                            curFoods.add(new Liquid(id, type, curPic, price, title, nutrition, dietary, halaal, quantityAvailable, volume));
-                            break;
-                        case 3:
-                            curFoods.add(new Packaged(id, type, curPic, price, title, nutrition, dietary, halaal, quantityAvailable, length, width, height));
-                            break;
+                    if (addFood) {
+                        switch (type) {
+                            case 1:
+                                curFoods.add(new Solid(id, type, curPic, price, title, nutrition, dietary, halaal, quantityAvailable, length, width, height));
+                                break;
+                            case 2:
+                                curFoods.add(new Liquid(id, type, curPic, price, title, nutrition, dietary, halaal, quantityAvailable, volume));
+                                break;
+                            case 3:
+                                curFoods.add(new Packaged(id, type, curPic, price, title, nutrition, dietary, halaal, quantityAvailable, length, width, height));
+                                break;
+                        }
                     }
-                    //FoodOrder foodOrder = FoodOrder.newInstance(new Solid(pic, price, title, nutrition, dietary, halaal, quantityAvailable, length, width, height));
-                    //Home.replaceFragment(foodOrder, "Food Order", false, "OTHER");
-
-                    //FoodOrder.populateList(solid);
                 }
-                //main.triggerFoodList();
-                //foods = (ArrayList<Food>) curFoods.clone();
+                addFood = false;
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -283,6 +243,7 @@ public class FoodOrder extends Fragment implements TotalListener, Payment.TotalL
         if (total > 0) {
             total = 0;
             txtTotal.setText("Total: R" + String.format("%.2f", total));
+            addFood = false;
             populateList(curFoods);
             foodAdapter = new FoodAdapter(foods);
             foodAdapter.setTotalListener(FoodOrder.this);

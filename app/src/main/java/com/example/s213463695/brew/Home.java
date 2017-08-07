@@ -312,7 +312,7 @@ public class Home extends AppCompatActivity
                 Date curDate = new Date();
                 Date prevDate = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").parse(stopTime);
                 if (status.equals("counted")) {
-                    prevO = new Order(time, date, quantity, price, 0.0, 0.0, Integer.parseInt(number), status, prevDate, dateIndex, foods);
+                    prevO = new Order(time, date, quantity, price, 0.0, 0.0, Integer.parseInt(number), status, prevDate, dateIndex, foods, FoodOrder.total);
                     prevO.setStopThread(true);
                 } else {
                     Double secondsBetween = (int) (curDate.getTime() - prevDate.getTime()) / 1000.0;
@@ -320,12 +320,12 @@ public class Home extends AppCompatActivity
                     Double secondsLeft = secondsStop - secondsBetween;
 
                     if (secondsLeft >= 0 && secondsLeft < 60) {
-                        prevO = new Order(time, date, quantity, price, 0.0, secondsLeft, Integer.parseInt(number), "queue", prevDate, dateIndex, foods);
+                        prevO = new Order(time, date, quantity, price, 0.0, secondsLeft, Integer.parseInt(number), "queue", prevDate, dateIndex, foods, FoodOrder.total);
                         prevO.startThread();
                     } else {
                         Double minutes = Math.floor(secondsLeft / 60);
                         Double seconds = secondsLeft % 60;
-                        prevO = new Order(time, date, quantity, price, minutes, seconds, Integer.parseInt(number), "queue", prevDate, dateIndex, foods);
+                        prevO = new Order(time, date, quantity, price, minutes, seconds, Integer.parseInt(number), "queue", prevDate, dateIndex, foods, FoodOrder.total);
                         prevO.startThread();
                     }
                 }
@@ -545,13 +545,13 @@ public class Home extends AppCompatActivity
                 break;
             }
             case R.id.place: {
-                PlaceOrder placeO = PlaceOrder.newInstance();
+                /*PlaceOrder placeO = PlaceOrder.newInstance();
                 placeO.setMainListener(this);
-                replaceFragment(placeO, "Place Order", false, "OTHER");
+                replaceFragment(placeO, "Place Order", false, "OTHER");*/
 
-                /*foodOrder = FoodOrder.newInstance();
+                foodOrder = FoodOrder.newInstance();
                 foodOrder.setMainListener(this);
-                replaceFragment(foodOrder, "Food Order", false, "OTHER");*/
+                replaceFragment(foodOrder, "Food Order", false, "OTHER");
                 break;
             }
             case R.id.view: {
@@ -821,21 +821,22 @@ public class Home extends AppCompatActivity
         return serverLink.getBeerPrice();
     }
 
-    public void triggerNotifications(String t, String d, String q, String p, String androidIndex, ArrayList<Food> foods) {
+    public void triggerNotifications(String t, String d, String q, String p, String androidIndex, ArrayList<Food> foods, int minute) {
         Order newO = null;
         Date curDate = new Date();
         if (orders.size() != 0) {
-            newO = new Order(t, d, q, p, 2.0, 59.0, orders.get(orders.size() - 1).getOrderNum() + 1, "queue", curDate, androidIndex, foods);
+            newO = new Order(t, d, q, p, (minute*1.0), 0.0, orders.get(orders.size() - 1).getOrderNum() + 1, "queue", curDate, androidIndex, foods, FoodOrder.total);
             orders.add(newO);
-            writeToFile(t, d, q, p, 2.0, 59.0, orders.get(orders.size() - 1).getOrderNum() + 1, "queue", curDate, androidIndex, foods);
+            writeToFile(t, d, q, p, (minute*1.0), 0.0, orders.get(orders.size() - 1).getOrderNum() + 1, "queue", curDate, androidIndex, foods);
         } else {
-            newO = new Order(t, d, q, p, 2.0, 59.0, orders.size() + 1, "queue", curDate, androidIndex, foods);
+            newO = new Order(t, d, q, p, (minute*1.0), 0.0, orders.size() + 1, "queue", curDate, androidIndex, foods, FoodOrder.total);
             orders.add(newO);
-            writeToFile(t, d, q, p, 2.0, 59.0, orders.size() + 1, "queue", curDate, androidIndex, foods);
+            writeToFile(t, d, q, p, (minute*1.0), 0.0, orders.size() + 1, "queue", curDate, androidIndex, foods);
         }
-        for (Order o : orders) {
+        /*for (Order o : orders) {
             map.put(o, o.getFoods());
-        }
+        }*/
+        map.put(newO, finalFoods);
         not = Notifications.newInstance();
         not.setMainListener(this);
         replaceFragment(not, "", false, "NOTIFICATION");
@@ -1000,6 +1001,8 @@ public class Home extends AppCompatActivity
         //this.cash = cash;
         loc = LocationMain.newInstance();
         loc.setMainListener(this);
+        //finalFoods.clear();
+        finalFoods = new ArrayList<>();
         for (Food value : foods) {
             if (value.quantity > 0) {
                 finalFoods.add(value);
